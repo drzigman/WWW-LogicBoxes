@@ -1,3 +1,8 @@
 {{$NEXT}}
 
+    - Updated POD Docs, corrected minor grammer and formatting mistakes
+    - Added POD Docs section about incremented keys for some methods
+
+0.0.1     2012-03-05 20:34:19 America/Chicago
+
     - First version, released on an unsuspecting world.

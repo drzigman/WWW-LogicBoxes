@@ -209,7 +209,7 @@ This is interpreted for you automagically into the repeating elements when the A
 
 For methods such as contacts__set_details that accep the same key multiple times except an incrementing digit is appended:
 
-https://test.httpapi.com/api/contacts/set-details.json?auth-userid=0&auth-password=password&contact-id=0&attr-name1=sponsor1&attr-value1=0&product-key=dotcoop 
+https://test.httpapi.com/api/contacts/set-details.json?auth-userid=0&auth-password=password&contact-id=0&attr-name1=sponsor1&attr-value1=0&product-key=dotcoop
 
 This module still accepts a hash and leaves it to the developer to handle the appending of the incrementing digit to the keys of the hash:
 
@@ -219,7 +219,8 @@ This module still accepts a hash and leaves it to the developer to handle the ap
 			'attr-name1'	=> 'sponsor',
 			'attr-value1'	=> '0',
 			'attr-name2'	=> 'CPR',
-			'attr-value2'	=> 'COO'
+			'attr-value2'	=> 'COO',
+			'product-key'	=> 'dotcoop'
 		}
 	);
 
