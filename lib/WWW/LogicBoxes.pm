@@ -118,10 +118,10 @@ __PACKAGE__->meta->make_immutable;
 
 __END__
 
--encoding utf8
+=encoding utf8
 
--head1 NAME
-WWW::LogicBoxes - Interact with LogicBoxes reseller API
+=head1 NAME
+WWW::LogicBoxes - Interact with LogicBoxes Reseller API
 
 =head1 SYNOPSIS
 
@@ -203,7 +203,7 @@ This module accepts a hash where the key is the name of the argument (such as do
 		}
 	);
 
-This is interprted for you automagically into the repeating elements.
+This is interpreted for you automagically into the repeating elements.
 
 =head1 AUTHORS
 
