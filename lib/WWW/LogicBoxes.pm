@@ -150,7 +150,7 @@ WWW::LogicBoxes - Interact with LogicBoxes Reseller API
 
 Constructs a new object for interacting with the LogicBoxes API.  If the "sandbox" parameter is specified then the API calls are made against the LogicBoxes test server instead of the production server.
 
-response_type is also an objection argument that dictates the format in which the responses from LogicBoxes' API will be in.  The default is XML, all supported protocols are:
+response_type is also an object argument that dictates the format in which the responses from LogicBoxes' API will be in.  The default is XML, all supported protocols are:
 
 =over
 
@@ -184,11 +184,11 @@ The method name is built using the URI that the request is expected at in a logi
 
 Where everything before the first "__" is the category and everything following it is the specific method (with - replaced with _ and / replaced with __).
 
-=head2 Arguments Based to Methods
+=head1 Arguments Passed to Methods
 
-The specific arguments each method requires is not enforced by this module, rather I leave it to the developer to reference the LogicBoxes API (again at http://manage.logicboxes.com/kb/answer/744) and to pass the correct arguments to each method.  There are two "odd" cases that you should be aware of with respect to the way arguments must be passed.
+The specific arguments each method requires is not enforced by this module, rather I leave it to the developer to reference the LogicBoxes API (again at http://manage.logicboxes.com/kb/answer/744) and to pass the correct arguments to each method as a hash.  There are two "odd" cases that you should be aware of with respect to the way arguments must be passed.
 
-=head3 Repeated Elements
+=head2 Repeated Elements
 
 For methods such as domains__check that accept the same "key" multiple times:
 
@@ -203,7 +203,27 @@ This module accepts a hash where the key is the name of the argument (such as do
 		}
 	);
 
-This is interpreted for you automagically into the repeating elements.
+This is interpreted for you automagically into the repeating elements when the API's URI is built.
+
+=head2 Array of Numbered Elements
+
+For methods such as contacts__set_details that accep the same key multiple times except an incrementing digit is appended:
+
+https://test.httpapi.com/api/contacts/set-details.json?auth-userid=0&auth-password=password&contact-id=0&attr-name1=sponsor1&attr-value1=0&product-key=dotcoop 
+
+This module still accepts a hash and leaves it to the developer to handle the appending of the incrementing digit to the keys of the hash:
+
+	$logic_boxes->contacts__set_details(
+		{
+			'contact-id'	=> 1337,
+			'attr-name1'	=> 'sponsor',
+			'attr-value1'	=> '0',
+			'attr-name2'	=> 'CPR',
+			'attr-value2'	=> 'COO'
+		}
+	);
+
+In this way you are able to overcome the need for unique keys and still pass the needed values onto LogicBoxes' API.
 
 =head1 AUTHORS
 
