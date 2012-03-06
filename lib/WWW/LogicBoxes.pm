@@ -89,40 +89,19 @@ sub _make_query_string {
 		. "." 			. $self->response_type
 		. "?auth-userid=" 	. uri_escape($self->username)
 		. "&auth-password=" 	. uri_escape($self->password)
-		. "&"			. build_get_args($opts);
+		. "&"			. _build_get_args($opts);
 
 	return $queryURI;
 }
 
-sub build_get_args {
+
+sub _build_get_args {
     my %args = %{$_[0]};
     return join "&", map {
         my $key = $_;
         map {join "=", $key, uri_escape($_) } ref $args{$_} ? @{$args{$_}} : $args{$_}
     } keys %args;
 }
-
-=ignore
-
-	my ($raw_args) = @ARG;
-	my @get_args;
-
-	for my $key (keys $raw_args) {
-		if(ref($raw_args->{$key}) eq ref []) {
-			#Handles the fact that the LogicBoxes API accepts the same key but perl hashes do not
-			foreach my $value (@{$raw_args->{$key}}) {
-				push @get_args, uri_escape($key) . "=" . uri_escape($value);
-			}
-		}
-		else {
-			push @get_args, join "=", map { uri_escape($_) } $key, $raw_args->{$key};
-		}
-	}
-	dd \@get_args;
-	return join "&", @get_args;
-}
-
-=cut
 
 sub _default__base_uri {
 	my ($self) = @ARG;
@@ -213,7 +192,7 @@ The specific arguments each method requires is not enforced by this module, rath
 
 For methods such as domains__check that accept the same "key" multiple times:
 
-https://test.httpapi.com/api/domains/available.json?auth-userid=0&auth-password=password&domain-name=domain1&domain-name=domain2&tlds=com&tlds=net 
+https://test.httpapi.com/api/domains/available.json?auth-userid=0&auth-password=password&domain-name=domain1&domain-name=domain2&tlds=com&tlds=net
 
 This module accepts a hash where the key is the name of the argument (such as domain-name) and the value is an array of values you wish to pass:
 
@@ -228,7 +207,7 @@ This is interprted for you automagically into the repeating elements.
 
 =head1 AUTHORS
 
-Robert Stone, C<< <drzigman AT cpan DOT org >
+Robert Stone, C<< <drzigman AT cpan DOT org > >>
 
 =head1 ACKNOWLEDGMENTS
 
