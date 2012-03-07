@@ -9,6 +9,8 @@ use Any::Moose "Role";
 use HTTP::Tiny;
 use English -no_match_vars;
 use Carp qw(croak);
+use XML::LibXML::Simple qw(XMLin);
+
 use Data::Dumper;
 
 # VERSION
@@ -135,7 +137,13 @@ foreach my $api_class (keys %api_methods) {
 					my $uri = $self->_make_query_string($args);
 
 					$web_method ~~ [qw(GET POST)] or croak "I'm not sure if this is supposed to be a get or a post type request...";
-					return $ua->request($web_method, $uri);
+					my $response = $ua->request($web_method, $uri);
+					if($self->response_type eq "xml_simple") {
+						return XMLin($response->{content});
+					}
+					else {
+						return $response->{content};
+					}
 				}
 			);
 		}

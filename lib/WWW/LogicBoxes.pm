@@ -19,7 +19,7 @@ use Carp qw(croak);
 with "WWW::LogicBoxes::Role::Commands";
 
 # Supported Response Types:
-my @response_types = qw(xml json);
+my @response_types = qw(xml json xml_simple);
 subtype "LogicBoxesResponseType"
 	=> as "Str",
 	=> where {
@@ -83,10 +83,11 @@ sub _make_query_string {
 	$api_method =~ s/_/-/g;
 	$api_method =~ s/__/\//g;
 
+	my $response_type = ($self->response_type eq 'xml_simple') ? 'xml' : $self->response_type;
 	my $queryURI = $self->_base_uri
 		. "api/"		. $api_class
 		. "/" 			. $api_method
-		. "." 			. $self->response_type
+		. "." 			. $response_type
 		. "?auth-userid=" 	. uri_escape($self->username)
 		. "&auth-password=" 	. uri_escape($self->password)
 		. "&"			. _build_get_args($opts);
@@ -157,6 +158,8 @@ response_type is also an object argument that dictates the format in which the r
 =item * xml
 
 =item * json
+
+=item * xml_simple
 
 =back
 
