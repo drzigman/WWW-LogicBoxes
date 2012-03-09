@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Modified tests to skip if username and password are not defined
+
+0.0.3     2012-03-06 19:04:42 America/Chicago
+
     - Added support for xml_simple
 
 0.0.2     2012-03-06 14:57:50 America/Chicago
