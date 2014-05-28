@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use utf8;
 
-use Any::Moose "Role";
+use Moose::Role;
 use HTTP::Tiny;
 use English -no_match_vars;
 use Carp qw(croak);
@@ -14,6 +14,7 @@ use XML::LibXML::Simple qw(XMLin);
 use Data::Dumper;
 
 # VERSION
+# ABSTRACT: Role that serves as the middleware to LogicBoxes
 
 =begin Pod::Coverage
 
