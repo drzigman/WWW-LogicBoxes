@@ -4,15 +4,12 @@ use strict;
 use warnings;
 use utf8;
 
-use Any::Moose;
-use Any::Moose "::Util::TypeConstraints";
+use Moose;
+use Moose::Util::TypeConstraints;
 use URI::Escape qw(uri_escape);
 use English -no_match_vars;
 use IO::Socket::SSL;
 use Carp qw(croak);
-
-#use List::Util "reduce";
-#use vars qw($a $b);
 
 # VERSION
 # ABSTRACT: Interact with LogicBoxes reseller API
