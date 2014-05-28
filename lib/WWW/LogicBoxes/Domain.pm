@@ -7,6 +7,9 @@ use Moose;
 use MooseX::StrictConstructor;
 use namespace::autoclean;
 
+# VERSION
+# ABSTRACT: LogicBoxes Domain Representation
+
 has name => (
     is       => 'ro',
     isa      => 'Str',
