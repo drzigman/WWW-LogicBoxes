@@ -10,6 +10,7 @@ use URI::Escape qw(uri_escape);
 use English -no_match_vars;
 use IO::Socket::SSL;
 use Carp qw(croak);
+
 #use List::Util "reduce";
 #use vars qw($a $b);
 
@@ -17,101 +18,109 @@ use Carp qw(croak);
 # ABSTRACT: Interact with LogicBoxes reseller API
 
 with "WWW::LogicBoxes::Role::Commands",
-     "WWW::LogicBoxes::Role::Command::CheckAvailability";
+  "WWW::LogicBoxes::Role::Command::CheckAvailability";
 
 # Supported Response Types:
 my @response_types = qw(xml json xml_simple);
-subtype "LogicBoxesResponseType"
-	=> as "Str",
-	=> where {
-		my $type = $ARG;
-		{ $type eq $ARG and return 1 for @response_types; 0 }
-	},
-	=> message {
-		"response_type must be one of " . join ", ", @response_types
-	};
+subtype
+  "LogicBoxesResponseType" => as "Str",
+  => where {
+    my $type = $ARG;
+    { $type eq $ARG and return 1 for @response_types; 0 }
+  },
+  => message {
+    "response_type must be one of " . join ", ", @response_types;
+  };
 
 has username => (
-	isa		=> "Str",
-	is		=> "ro",
-	required	=> 1
+    isa      => "Str",
+    is       => "ro",
+    required => 1
 );
 
 has password => (
-	isa		=> "Str",
-	is		=> "ro",
-	required 	=> 1
+    isa      => "Str",
+    is       => "ro",
+    required => 1
 );
 
 has sandbox => (
-	isa		=> "Bool",
-	is		=> "ro",
-	default		=> 0
+    isa     => "Bool",
+    is      => "ro",
+    default => 0
 );
 
 has response_type => (
-	isa		=> "LogicBoxesResponseType",
-	is		=> "ro",
-	default		=> "xml"
+    isa     => "LogicBoxesResponseType",
+    is      => "ro",
+    default => "xml"
 );
 
 has _base_uri => (
-	isa		=> "Str",
-	is		=> "ro",
-	lazy		=> 1,
-	default		=> \&_default__base_uri
+    isa     => "Str",
+    is      => "ro",
+    lazy    => 1,
+    default => \&_default__base_uri
 );
 
 sub _make_query_string {
-	my ($self, $opts) = @_;
+    my ( $self, $opts ) = @_;
 
-	unless(defined $opts->{api_class}) {
-		croak "You must specify the class (domains, contacts, etc...) for the request.  See the class required for yoru specific operation at http://manage.logicboxes.com/kb/answer/751.";
-	}
+    unless ( defined $opts->{api_class} ) {
+        croak
+"You must specify the class (domains, contacts, etc...) for the request.  See the class required for yoru specific operation at http://manage.logicboxes.com/kb/answer/751.";
+    }
 
-	unless(defined $opts->{api_method}) {
-		croak "You must specify the method (create, available, etc...) for the request.  See the method required for your specific operation at http://manage.logicboxes.com/kb/answer/751.";
-	}
+    unless ( defined $opts->{api_method} ) {
+        croak
+"You must specify the method (create, available, etc...) for the request.  See the method required for your specific operation at http://manage.logicboxes.com/kb/answer/751.";
+    }
 
-	my $api_class = $opts->{api_class};
-	delete $opts->{api_class};
+    my $api_class = $opts->{api_class};
+    delete $opts->{api_class};
 
-	my $api_method = $opts->{api_method};
-	delete $opts->{api_method};
+    my $api_method = $opts->{api_method};
+    delete $opts->{api_method};
 
-	$api_class  =~ s/_/-/g;
-	$api_class  =~ s/__/\//g;
-	$api_method =~ s/_/-/g;
-	$api_method =~ s/__/\//g;
+    $api_class =~ s/_/-/g;
+    $api_class =~ s/__/\//g;
+    $api_method =~ s/_/-/g;
+    $api_method =~ s/__/\//g;
 
-	my $response_type = ($self->response_type eq 'xml_simple') ? 'xml' : $self->response_type;
-	my $queryURI = $self->_base_uri
-		. "api/"		. $api_class
-		. "/" 			. $api_method
-		. "." 			. $response_type
-		. "?auth-userid=" 	. uri_escape($self->username)
-		. "&auth-password=" 	. uri_escape($self->password)
-		. "&"			. _build_get_args($opts);
+    my $response_type =
+      ( $self->response_type eq 'xml_simple' ) ? 'xml' : $self->response_type;
+    my $queryURI =
+        $self->_base_uri . "api/"
+      . $api_class . "/"
+      . $api_method . "."
+      . $response_type
+      . "?auth-userid="
+      . uri_escape( $self->username )
+      . "&auth-password="
+      . uri_escape( $self->password ) . "&"
+      . _build_get_args($opts);
 
-	return $queryURI;
+    return $queryURI;
 }
 
-
 sub _build_get_args {
-    my %args = %{$_[0]};
+    my %args = %{ $_[0] };
     return join "&", map {
         my $key = $_;
-        map {join "=", $key, uri_escape($_) } ref $args{$_} ? @{$args{$_}} : $args{$_}
+        map { join "=", $key, uri_escape($_) }
+          ref $args{$_}
+          ? @{ $args{$_} }
+          : $args{$_}
     } keys %args;
 }
 
 sub _default__base_uri {
-	my ($self) = @ARG;
+    my ($self) = @ARG;
 
-	my $sandbox 	= "https://test.httpapi.com/";
-	my $live	= "https://httpapi.com/";
+    my $sandbox = "https://test.httpapi.com/";
+    my $live    = "https://httpapi.com/";
 
-	return $self->sandbox ? $sandbox : $live;
+    return $self->sandbox ? $sandbox : $live;
 }
 
 __PACKAGE__->meta->make_immutable;
