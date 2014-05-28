@@ -60,7 +60,9 @@ has _base_uri => (
     default => \&_default__base_uri
 );
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _make_query_string {
+## use critic
     my ( $self, $opts ) = @_;
 
     unless ( defined $opts->{api_class} ) {
@@ -102,6 +104,9 @@ sub _make_query_string {
 
 sub _build_get_args {
     my %args = %{ $_[0] };
+
+    #TODO: Clean this up
+    ## no critic (BuiltinFunctions::ProhibitComplexMappings)
     return join "&", map {
         my $key = $_;
         map { join "=", $key, uri_escape($_) }
@@ -109,6 +114,7 @@ sub _build_get_args {
           ? @{ $args{$_} }
           : $args{$_}
     } keys %args;
+    ## use critic
 }
 
 sub _default__base_uri {

@@ -7,6 +7,8 @@ use Moose;
 use MooseX::StrictConstructor;
 use namespace::autoclean;
 
+use Carp;
+
 # VERSION
 # ABSTRACT: LogicBoxes Domain Representation
 
@@ -23,8 +25,11 @@ has is_available => (
 );
 
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _build_is_available {
-    ...
+## use critic
+
+    croak "Not Yet Implemented";
 }
 
 __PACKAGE__->meta->make_immutable;
