@@ -16,7 +16,8 @@ use Carp qw(croak);
 # VERSION
 # ABSTRACT: Interact with LogicBoxes reseller API
 
-with "WWW::LogicBoxes::Role::Commands";
+with "WWW::LogicBoxes::Role::Commands",
+     "WWW::LogicBoxes::Role::Command::CheckAvailability";
 
 # Supported Response Types:
 my @response_types = qw(xml json xml_simple);
