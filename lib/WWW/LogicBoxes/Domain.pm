@@ -8,6 +8,7 @@ use MooseX::StrictConstructor;
 use namespace::autoclean;
 
 use Carp;
+use Mozilla::PublicSuffix qw(public_suffix);
 
 # VERSION
 # ABSTRACT: LogicBoxes Domain Representation
@@ -24,6 +25,11 @@ has is_available => (
     builder => '_build_is_available',
 );
 
+sub tld {
+    my $self = shift;
+
+    return public_suffix($self->name);
+}
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _build_is_available {
