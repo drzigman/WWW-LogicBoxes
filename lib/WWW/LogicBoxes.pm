@@ -5,16 +5,22 @@ use warnings;
 use utf8;
 
 use Moose;
+use Moose::Util qw(throw_exception);
 use Moose::Util::TypeConstraints;
+use Moose::Exception::AttributeIsRequired;
+use Smart::Comments -ENV;
+
+use Carp qw(croak);
+
 use URI::Escape qw(uri_escape);
 use English -no_match_vars;
 use IO::Socket::SSL;
-use Carp qw(croak);
 
 # VERSION
 # ABSTRACT: Interact with LogicBoxes reseller API
 
 with "WWW::LogicBoxes::Role::Commands",
+  "WWW::LogicBoxes::Role::Submit",
   "WWW::LogicBoxes::Role::Command::CheckAvailability";
 
 # Supported Response Types:
@@ -32,13 +38,21 @@ subtype
 has username => (
     isa      => "Str",
     is       => "ro",
-    required => 1
+    required => 1,
 );
 
 has password => (
-    isa      => "Str",
-    is       => "ro",
-    required => 1
+    isa       => "Str",
+    is        => "ro",
+    required  => 0,
+    predicate => 'has_password',
+);
+
+has apikey => (
+    isa       => "Str",
+    is        => "ro",
+    required  => 0,
+    predicate => 'has_apikey',
 );
 
 has sandbox => (
@@ -49,7 +63,7 @@ has sandbox => (
 
 has response_type => (
     isa     => "LogicBoxesResponseType",
-    is      => "ro",
+    is      => "rw",
     default => "xml"
 );
 
@@ -59,6 +73,39 @@ has _base_uri => (
     lazy    => 1,
     default => \&_default__base_uri
 );
+
+around BUILDARGS => sub {
+    my $orig  = shift;
+    my $class = shift;
+    my $args  = shift;
+
+    if( !exists $args->{username} ) {
+        ### No Username Specified
+
+        throw_exception(AttributeIsRequired => attribute_name => 'username',
+            class_name => $class,
+            params     => $args,
+        );
+    }
+
+    if( !exists $args->{password} && !exists $args->{apikey} ) {
+        ### No Password and No API Key Specified
+
+        throw_exception(AttributeIsRequired => attribute_name => 'password',
+            class_name => $class,
+            params     => $args,
+        );
+    }
+
+    if( exists $args->{password} && exists $args->{apikey} ) {
+        ### Both a Password and an API Key Were Specified
+
+        croak "You must specify a password or an apikey, not both.";
+    }
+
+    return $class->$orig($args);
+};
+
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _make_query_string {
@@ -88,18 +135,20 @@ sub _make_query_string {
 
     my $response_type =
       ( $self->response_type eq 'xml_simple' ) ? 'xml' : $self->response_type;
-    my $queryURI =
-        $self->_base_uri . "api/"
-      . $api_class . "/"
-      . $api_method . "."
-      . $response_type
-      . "?auth-userid="
-      . uri_escape( $self->username )
-      . "&auth-password="
-      . uri_escape( $self->password ) . "&"
-      . _build_get_args($opts);
 
-    return $queryURI;
+    my $query_uri = $self->_base_uri . "api/" . $api_class . "/" . $api_method . "."
+        . $response_type . "?auth-userid=" . uri_escape( $self->username );
+
+    if( $self->has_password ) {
+      $query_uri .= "&auth-password=" . uri_escape( $self->password )
+    }
+    elsif($self->has_apikey) {
+      $query_uri .= "&api-key=" . uri_escape( $self->apikey )
+    }
+
+    $query_uri .= "&" . _build_get_args($opts);
+
+    return $query_uri;
 }
 
 sub _build_get_args {

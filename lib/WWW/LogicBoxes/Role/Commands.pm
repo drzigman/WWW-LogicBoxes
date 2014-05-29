@@ -6,6 +6,8 @@ use warnings;
 use utf8;
 
 use Moose::Role;
+use Smart::Comments -ENV;
+
 use HTTP::Tiny;
 use English -no_match_vars;
 use Carp qw(croak);
@@ -164,6 +166,8 @@ foreach my $api_class ( keys %api_methods ) {
                     $args->{api_class}  = $api_class;
                     $args->{api_method} = $api_method;
                     my $uri = $self->_make_query_string($args);
+
+                    ### Request URI: ($uri)
 
                     $web_method ~~ [qw(GET POST)]
                         or croak "I'm not sure if this is supposed to be a get or "
