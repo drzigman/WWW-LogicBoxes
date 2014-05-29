@@ -1,16 +1,23 @@
-{{$NEXT}}
+0.1.0     2014-05-28
+    - Added support for apikey based authentication
+    - Quitely releasing two new more well defined methods
+        * check_availability
+        * suggest_names
+    - Both of these make use of WWW::LogicBoxes::Domain which is just a very
+      basic implementation at this point
 
+0.0.4     2012-03-06
     - Modified tests to skip if username and password are not defined
 
-0.0.3     2012-03-06 19:04:42 America/Chicago
+0.0.3     2012-03-06
 
     - Added support for xml_simple
 
-0.0.2     2012-03-06 14:57:50 America/Chicago
+0.0.2     2012-03-06
 
     - Updated POD Docs, corrected minor grammer and formatting mistakes
     - Added POD Docs section about incremented keys for some methods
 
-0.0.1     2012-03-05 20:34:19 America/Chicago
+0.0.1     2012-03-05
 
     - First version, released on an unsuspecting world.
