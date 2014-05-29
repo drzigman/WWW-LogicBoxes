@@ -12,6 +12,34 @@ use JSON qw(decode_json);
 # VERSION
 # ABSTRACT: Actually performs the interaction with LogicBoxes
 
+=head1 NAME
+
+WWW::LogicBoxes::Role::Submit - Actually Performs the Interaction with LogicBoxes
+
+=head1 METHODS
+
+=head2 submit
+
+    my $response = $self->submit({
+        method => 'domains__available',
+        params => {
+            'domain-name' => $args{slds},
+            'tlds'        => $args{tlds},
+        }
+    });
+
+Note the B<self> this is a Role.
+
+submit performs the actual submission to the LogicBoxes API and is abstracted as such since
+there is a lot of boilerplate for making a submission.  This is also the method that makes it
+possible to use any response type yet still get the JSON needed in order for the well defined
+methods to work.
+
+It returns an ArrayRef that is the response on success, and croaks on serious errors like
+invalid credentials or unable to decode the response from LogicBoxes.
+
+=cut
+
 sub submit {
     my $self   = shift;
     my (%args) = validated_hash(

@@ -30,10 +30,14 @@ WWW::LogicBoxes::Role::Command::CheckAvailability
     use WWW::LogicBoxes;
     use WWW::LogicBoxes::Domain;
 
-    my $api = WWW::LogicBoxes->new({ ... });
+    my $api = WWW::LogicBoxes->new({
+        username => '123456',
+        password => 'Top Secret!',
+    });
+
     my $domains = $api->check_availability({
         slds => [ 'cpan', 'hostgator', 'drzigman' ],
-        tlds => [ 'com', 'net', org' ]
+        tlds => [ 'com', 'net', 'org' ]
     });
 
 =head1 METHODS
@@ -43,7 +47,7 @@ WWW::LogicBoxes::Role::Command::CheckAvailability
     my $api = WWW::LogicBoxes->new({ ... });
     my $domains = $api->check_availability({
         slds => [ 'cpan', 'hostgator', 'drzigman' ],
-        tlds => [ 'com', 'net', org' ]
+        tlds => [ 'com', 'net', 'org' ]
     });
 
 Checks to see if the specified combination of slds and tlds are available which must be
