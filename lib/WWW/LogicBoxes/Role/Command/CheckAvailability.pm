@@ -13,6 +13,8 @@ use Mozilla::PublicSuffix qw(public_suffix);
 
 use WWW::LogicBoxes::Domain;
 
+requires 'submit';
+
 # VERSION
 # ABSTRACT: Domain Availability API Calls
 
@@ -64,21 +66,13 @@ sub check_availability {
         croak "The response_type must be set to json";
     }
 
-    my $response = eval {
-        my $raw_json = $self->domains__available({
+    my $response = $self->submit({
+        method => 'domains__available',
+        params => {
             'domain-name' => $args{slds},
             'tlds'        => $args{tlds},
-        });
-
-        ### Raw JSON: ($raw_json)
-
-        return decode_json($raw_json);
-    };
-
-    if($@) {
-        croak "Unable to decode response from LogicBoxes: $@";
-    }
-
+        }
+    });
 
     my @domains;
     for my $domain_name (keys %{ $response }) {
@@ -153,24 +147,16 @@ sub suggest_names {
         croak "The response_type must be set to json";
     }
 
-    my $response = eval {
-        my $raw_json = $self->domains__suggest_names({
+    my $response = $self->submit({
+        method => 'domains__suggest_names',
+        params => {
             keyword          => $args{phrase},
             tlds             => $args{tlds},
             'hyphen-allowed' => $args{hyphen}  ? 'true' : 'false',
             'add-related'    => $args{related} ? 'true' : 'false',
             'no-of-results'  => $args{num_results},
-        });
-
-        ### Raw JSON: ($raw_json)
-
-        return decode_json($raw_json);
-    };
-
-    if($@) {
-        croak "Unable to decode response from LogicBoxes: $@"
-    }
-
+        }
+    });
 
     my @domains;
     for my $sld (keys %{ $response }) {
@@ -186,17 +172,5 @@ sub suggest_names {
 
     return \@domains;
 }
+
 1;
-
-
-
-
-
-
-
-
-
-
-
-
-
