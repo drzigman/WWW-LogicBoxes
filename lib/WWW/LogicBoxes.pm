@@ -188,24 +188,25 @@ WWW::LogicBoxes - Interact with LogicBoxes Reseller API
 
 =head1 SYNOPSIS
 
-	use strict;
-	use warnings;
-	use WWW::LogicBoxes;
+    use strict;
+    use warnings;
+    use WWW::LogicBoxes;
 
-	my $logic_boxes = WWW::LogicBoxes->new(
-		username	=> "resellid",
-		password	=> "resellpw",
-		response_type	=> "xml",
-		sandbox		=> 1
-	);
+    my $logic_boxes = WWW::LogicBoxes->new({
+        username	=> "resellid",
 
-	my $response = $logic_boxes->domains__available(
-		{
-			'domain-name' 	=> ["google", "cnn"],
-			'tlds'		=> ["com","net"]
-		}
-	);
-	...
+        # You may specify a password OR an apikey
+        password	=> "resellpw",
+        apikey      => "apikey",
+
+        response_type => "xml",
+        sandbox		  => 1
+    });
+
+    my $response = $logic_boxes->domains__available({
+        'domain-name' 	=> ["google", "cnn"],
+        'tlds'		=> ["com","net"]
+    } );
 
 =head1 METHODS
 
@@ -227,15 +228,13 @@ response_type is also an object argument that dictates the format in which the r
 
 =head2 Suggest Domains (and many others)
 
-	my $response = $logic_boxes->domains__suggest_names(
-		{
-			'keyword'	=> 'car',
-			'tlds'		=> ['com', 'net', 'org'],
-			'no-of-results'	=> 10,
-			'hypehn-allowed'=> 'false',
-			'add-related'	=> 'true',
-		}
-	);
+    my $response = $logic_boxes->domains__suggest_names({
+        'keyword'	=> 'car',
+        'tlds'		=> ['com', 'net', 'org'],
+        'no-of-results'	=> 10,
+        'hypehn-allowed'=> 'false',
+        'add-related'	=> 'true',
+    });
 
 This module implements all of the API methods available using the LogicBoxes API by abstracting out the need to specify the HTTP method (POST or GET) and automagically building the request URI according to the documentation provided by Logic Boxes (see the Logic Boxes API user guide at http://manage.logicboxes.com/kb/answer/744).  To fully understand the method names it's best to take a specific example (in this case the suggestion of domain names).
 
@@ -245,7 +244,7 @@ https://test.httpapi.com/api/domains/suggest-names.json?auth-userid=0&auth-passw
 
 The method name is built using the URI that the request is expected at in a logical way.  Since this method is a member of the Domains Category and is specifically Suggest Names we end up:
 
-	$logic_boxes->domains__suggest_names
+    $logic_boxes->domains__suggest_names
 
 Where everything before the first "__" is the category and everything following it is the specific method (with - replaced with _ and / replaced with __).
 
@@ -261,12 +260,10 @@ https://test.httpapi.com/api/domains/available.json?auth-userid=0&auth-password=
 
 This module accepts a hash where the key is the name of the argument (such as domain-name) and the value is an array of values you wish to pass:
 
-	$logic_boxes->domains__available(
-		{
-			'domain-name' 	=> ["google", "cnn"],
-			'tlds'		=> ["com","net"]
-		}
-	);
+    $logic_boxes->domains__available({
+        'domain-name' 	=> ["google", "cnn"],
+        'tlds'		=> ["com","net"]
+    });
 
 This is interpreted for you automagically into the repeating elements when the API's URI is built.
 
@@ -278,16 +275,14 @@ https://test.httpapi.com/api/contacts/set-details.json?auth-userid=0&auth-passwo
 
 This module still accepts a hash and leaves it to the developer to handle the appending of the incrementing digit to the keys of the hash:
 
-	$logic_boxes->contacts__set_details(
-		{
-			'contact-id'	=> 1337,
-			'attr-name1'	=> 'sponsor',
-			'attr-value1'	=> '0',
-			'attr-name2'	=> 'CPR',
-			'attr-value2'	=> 'COO',
-			'product-key'	=> 'dotcoop'
-		}
-	);
+    $logic_boxes->contacts__set_details({
+        'contact-id'	=> 1337,
+        'attr-name1'	=> 'sponsor',
+        'attr-value1'	=> '0',
+        'attr-name2'	=> 'CPR',
+        'attr-value2'	=> 'COO',
+        'product-key'	=> 'dotcoop'
+    });
 
 In this way you are able to overcome the need for unique keys and still pass the needed values onto LogicBoxes' API.
 
