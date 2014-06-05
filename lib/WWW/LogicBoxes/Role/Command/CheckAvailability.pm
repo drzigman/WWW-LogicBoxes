@@ -66,10 +66,6 @@ sub check_availability {
         tlds => { isa => 'ArrayRef[Str]' },
     );
 
-    if( $self->response_type ne 'json' ) {
-        croak "The response_type must be set to json";
-    }
-
     my $response = $self->submit({
         method => 'domains__available',
         params => {
@@ -146,10 +142,6 @@ sub suggest_names {
         related     => { isa => 'Bool', default => 0 },
         num_results => { isa => 'Int',  default => 10 },
     );
-
-    if( $self->response_type ne 'json' ) {
-        croak "The response_type must be set to json";
-    }
 
     my $response = $self->submit({
         method => 'domains__suggest_names',
