@@ -10,6 +10,7 @@ use MooseX::Types -declare => [qw(
     PhoneNumber
     Password
     Language
+    ContactType
 )];
 
 use MooseX::Types::Moose
@@ -38,4 +39,19 @@ coerce PhoneNumber,
     via { Number::Phone->new( $_ ) };
 
 enum Language, [qw( en )];
+enum ContactType, [qw(
+    Contact
+    AtContact
+    CaContact
+    CnContact
+    CoContact
+    CoopContact
+    DeContact
+    EsContact
+    EuContact
+    NlContact
+    RuContact
+    UkContact
+)];
+
 1;

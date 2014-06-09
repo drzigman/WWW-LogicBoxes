@@ -9,8 +9,6 @@ use Smart::Comments -ENV;
 
 use Carp;
 
-use WWW::LogicBoxes::Contact;
-
 requires 'submit';
 
 # VERSION
@@ -45,22 +43,71 @@ sub create_contact {
             'phone-cc'    => $args{contact}->phone_number->country_code,
             phone         => ($args{contact}->phone_number->areacode // '')
                 . $args{contact}->phone_number->subscriber,
-            'fax-cc'      => $args{contact}->fax_number->country_code,
-            fax           => ($args{contact}->fax_number->areacode // '')
-                . $args{contact}->fax_number->subscriber,
+            ( $args{contact}->has_fax_number )
+                ? ('fax-cc'      => $args{contact}->fax_number->country_code,
+                    fax          => ($args{contact}->fax_number->areacode // '')
+                        . $args{contact}->fax_number->subscriber,
+                ) : ( ),
             type          => $args{contact}->type,
             'customer-id' => $args{contact}->customer_id,
         },
     });
 
-    use Data::Dumper;
-    print Dumper($response);
+    $args{contact}->id($response->{id});
 
     return $args{contact};
 }
 
 sub get_contact_by_id {
-    ...
+    my $self = shift;
+    my $id   = shift;
+
+    if(!defined $id) {
+        croak "The contact id must be specified";
+    }
+
+    my $response = $self->submit({
+        method => 'contacts__details',
+        params => {
+            'contact-id' => $id,
+        },
+    });
+
+    return $self->_construct_contact_from_result($response);
+}
+
+sub _construct_contact_from_result {
+    my $self     = shift;
+    my $response = shift;
+
+    if(!defined $response) {
+        return;
+    }
+
+    my $contact = WWW::LogicBoxes::Contact->new({
+        id         => $response->{contactid},
+        name       => $response->{name},
+        company    => $response->{company},
+        email      => $response->{emailaddr},
+
+        address1   => $response->{address1},
+        ( exists $response->{address2} ) ? ( address2 => $response->{address2} ) : ( ),
+        ( exists $response->{address3} ) ? ( address3 => $response->{address3} ) : ( ),
+        city       => $response->{city},
+        state      => $response->{state},
+        country    => $response->{country},
+        zipcode    => $response->{zip},
+
+        phone_number => ( $response->{telnocc} . $response->{telno} ),
+        ( exists $response->{faxnocc} )
+            ? ( fax_number => ( $response->{faxnocc} . $response->{faxno} ) )
+            : ( ),
+
+        type        => $response->{type},
+        customer_id => $response->{customerid},
+    });
+
+    return $contact;
 }
 
 1;

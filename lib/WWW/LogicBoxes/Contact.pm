@@ -9,49 +9,27 @@ use MooseX::Types::Email qw(EmailAddress);
 use MooseX::StrictConstructor;
 use namespace::autoclean;
 
-use Number::Phone;
-use Carp;
+use WWW::LogicBoxes::Types qw(Int Str EmailAddress PhoneNumber ContactType);
 
 # VERSION
 # ABSTRACT: LogicBoxes Contact
 
-class_type 'Number::Phone';
-
-coerce 'Number::Phone'
-    => from 'Str',
-    => via { Number::Phone->new( $_ ) };
-
-enum 'ContactType' => [qw(
-    Contact
-    AtContact
-    CaContact
-    CnContact
-    CoContact
-    CoopContact
-    DeContact
-    EsContact
-    EuContact
-    NlContact
-    RuContact
-    UkContact
-)];
-
 has 'id' => (
     is        => 'rw',
-    isa       => 'Int',
+    isa       => Int,
     required  => 0,
     predicate => 'has_id',
 );
 
 has 'name' => (
     is       => 'rw',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'company' => (
     is       => 'rw',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
@@ -63,59 +41,59 @@ has 'email' => (
 
 has 'address1' => (
     is       => 'rw',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'address2' => (
     is        => 'rw',
-    isa       => 'Str',
+    isa       => Str,
     required  => 0,
     predicate => 'has_address2',
 );
 
 has 'address3' => (
     is        => 'rw',
-    isa       => 'Str',
+    isa       => Str,
     required  => 0,
     predicate => 'has_address3',
 );
 
 has 'city' => (
     is       => 'rw',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'state' => (
     is        => 'rw',
-    isa       => 'Str',
+    isa       => Str,
     required  => 0,
     predicate => 'has_state',
 );
 
 has 'country' => (
     is       => 'rw',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'zipcode' => (
     is       => 'rw',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
 has 'phone_number' => (
     is       => 'rw',
-    isa      => 'Number::Phone',
+    isa      => PhoneNumber,
     required => 1,
     coerce   => 1,
 );
 
 has 'fax_number' => (
     is        => 'rw',
-    isa       => 'Number::Phone',
+    isa       => PhoneNumber,
     required  => 0,
     coerce    => 1,
     predicate => 'has_fax_number',
@@ -123,14 +101,14 @@ has 'fax_number' => (
 
 has 'type' => (
     is       => 'rw',
-    isa      => 'ContactType',
+    isa      => ContactType,
     required => 0,
     default  => 'Contact',
 );
 
 has 'customer_id' => (
     is       => 'rw',
-    isa      => 'Int',
+    isa      => Int,
     required => 1,
 );
 
