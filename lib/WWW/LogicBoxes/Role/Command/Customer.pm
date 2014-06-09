@@ -16,6 +16,46 @@ requires 'submit';
 # VERSION
 # ABSTRACT: Customer API Calls
 
+=head1 NAME
+
+WWW::LogicBoxes::Role::Command::Customer
+
+=head1 SYNOPSIS
+
+    use strict;
+    use warnings;
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Customer;
+
+    my $api = WWW::LogicBoxes->new({
+        username => '123456',
+        password => 'Top Secret!',
+    });
+
+    my $customer = WWW::LogicBoxes::Customer->new({
+        name => 'Iam A. Test',
+    });
+
+    my $created_customer = $api->create_customer({ customer => $customer });
+
+    print "Customer ID: " . $created_customer->id . "\n";
+
+=head1 METHODS
+
+=head2 create_customer
+    my $api      = WWW::LogicBoxes->new({ ... });
+    my $customer = WWW::LogicBoxes::Customer->new({ ... });
+
+    my $created_customer = $api->create_customer({ customer => $customer });
+
+Creates a customer given a WWW::LogicBoxes::Customer object.
+
+This method will set the id attribute of $customer that was provided as an argument,
+in addition to returning an instance of WWW::LogicBoxes::Customer.
+
+=cut
+
 sub create_customer {
     my $self = shift;
     my (%args) = validated_hash(
@@ -77,6 +117,20 @@ sub create_customer {
     return $args{customer};
 }
 
+=head2 get_customer_by_username
+
+    my $api = WWW::LogicBoxes->new({ ... });
+    my $customer = $api->get_customer_by_username('drzigman@cpan.org');
+
+    print "Customer Phone Number is: " . $customer->phone_number->format . "\n";
+
+Performs a search with LogicBoxes for a WWW::LogicBoxes::Customer object with the specified
+username.  I<NOTE> that usernames are email addresses.
+
+Returned is a fully formed WWW::LogicBoxes::Customer object
+
+=cut
+
 sub get_customer_by_username {
     my $self     = shift;
     my $username = shift;
@@ -95,6 +149,20 @@ sub get_customer_by_username {
     return $self->_construct_customer_from_response($response);
 
 }
+
+=head2 get_customer_by_id
+
+    my $api = WWW::LogicBoxes->new({ ... });
+    my $customer = $api->get_customer_by_id(42);
+
+    print "Customer Phone Number is: " . $customer->phone_number->format . "\n";
+
+Performs a search with LogicBoxes for a WWW::LogicBoxes::Customer object with the specified
+id.
+
+Returned is a fully formed WWW::LogicBoxes::Customer object
+
+=cut
 
 sub get_customer_by_id {
     my $self        = shift;
