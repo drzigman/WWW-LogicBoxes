@@ -21,7 +21,9 @@ use IO::Socket::SSL;
 
 with "WWW::LogicBoxes::Role::Commands",
   "WWW::LogicBoxes::Role::Submit",
-  "WWW::LogicBoxes::Role::Command::CheckAvailability";
+  "WWW::LogicBoxes::Role::Command::CheckAvailability",
+  "WWW::LogicBoxes::Role::Command::Customer",
+  "WWW::LogicBoxes::Role::Command::Contact";
 
 # Supported Response Types:
 my @response_types = qw(xml json xml_simple);

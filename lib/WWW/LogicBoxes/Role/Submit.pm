@@ -5,6 +5,7 @@ use warnings;
 
 use Moose::Role;
 use MooseX::Params::Validate;
+use Smart::Comments -ENV;
 
 use Carp qw(croak);
 use JSON qw(decode_json);
@@ -58,6 +59,11 @@ sub submit {
         my $raw_json = $self->$method( $args{params} );
 
         ### Raw JSON: ($raw_json)
+
+        if($raw_json =~ /^\d+$/) {
+            # When just an id is returned, JSON is not used
+            return { id => $raw_json };
+        }
 
         return decode_json($raw_json);
     };
