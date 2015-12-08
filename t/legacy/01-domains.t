@@ -3,69 +3,99 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
-use Test::Most;
+use Test::More;
+use Test::Exception;
+use String::Random qw( random_string );
 
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Test::WWW::LogicBoxes qw(create_api);
 
-use WWW::LogicBoxes;
+use JSON qw( decode_json );
 
 my $logic_boxes = create_api();
 
-lives_ok {
-    my $response = $logic_boxes->domains__available(
-        {
-            'domain-name' => [ "google", "cnn" ],
-            'tlds'        => [ "com",    "net" ]
-        }
-    );
-}
-'Check the availability of a domain';
+subtest 'Test Unavailable Domains' => sub {
+    my $response;
+    lives_ok {
+        $response = $logic_boxes->domains__available(
+            {
+                'domain-name' => [ "google", "cnn" ],
+                'tlds'        => [ "com",    "net" ]
+            }
+        );
+    }
+    'Check the availability of a domain';
 
-lives_ok {
-    my $response = $logic_boxes->domains__suggest_names(
-        {
-            'keyword'        => 'car',
-            'tlds'           => [ 'com', 'net', 'org' ],
-            'no-of-results'  => 10,
-            'hypehn-allowed' => 'false',
-            'add-related'    => 'true',
-        }
-    );
-}
-'Check the name suggestion functionality';
+    my $json;
+    lives_ok {
+        $json = decode_json( $response );
+    } 'Lives through decoding json';
 
-lives_ok {
-    my $response = $logic_boxes->domains__orderid(
-        {
-            'domain-name' => 'hostgator.com',
-        }
-    );
-}
-"Get a domain's order id";
+    for my $domain ( 'google.com', 'google.net', 'cnn.com', 'cnn.net' ) {
+        cmp_ok( $json->{$domain}{status}, 'eq', 'regthroughothers', "$domain correctly registered" );
+    }
+};
 
-lives_ok {
-    my $response = $logic_boxes->domains__renew(
-        {
-            'order-id'       => '1234',
-            'years'          => '2',
-            'exp-date'       => '1279012036',
-            'invoice-option' => 'OnlyAdd',
-        }
-    );
-}
-'Attempt to renew a domain';
+subtest 'Test Available Domains' => sub {
+    my $slds = [
+        'test-' . random_string('nnccnnccnnccnnccnncc'),
+        'test-' . random_string('nnccnnccnnccnnccnncc'),
+    ];
+    my $tlds = [ 'com', 'net' ];
 
-lives_ok {
-    my $response = $logic_boxes->domains__tel__cth_details(
-        {
-            'order-id' => '1234',
-        }
-    );
+    my $response;
+    lives_ok {
+        $response = $logic_boxes->domains__available(
+            {
+                'domain-name' => $slds,
+                'tlds'        => $tlds,
+            }
+        );
+    }
+    'Check the availability of a domain';
 
-}
-'Testing an API method with a / and a -';
+    my $json;
+    lives_ok {
+        $json = decode_json( $response );
+    } 'Lives through decoding json';
+
+    for my $sld (@{ $slds }) {
+        for my $tld (@{ $tlds }) {
+            my $domain = sprintf('%s.%s', $sld, $tld );
+            cmp_ok( $json->{$domain}{status}, 'eq', 'available', "$domain correctly available" );
+        }
+    }
+};
+
+subtest 'Suggest Domain Names' => sub {
+    my $response;
+
+    lives_ok {
+        $response = $logic_boxes->domains__suggest_names(
+            {
+                'keyword'        => 'car',
+                'tlds'           => [ 'com', 'net', 'org' ],
+                'no-of-results'  => 10,
+                'hypehn-allowed' => 'false',
+                'add-related'    => 'true',
+            }
+        );
+    }
+    'Check the name suggestion functionality';
+
+    my $json;
+    lives_ok {
+        $json = decode_json( $response );
+    } 'Lives through decoding json';
+
+    for my $sld ( keys $json ) {
+        for my $tld (qw( com net org )) {
+            my $domain = sprintf('%s.%s', $sld, $tld );
+            my $status = $json->{$sld}{$tld};
+            ok( $status eq 'available' || $status eq 'notavailable', "$domain is $status" );
+        }
+    }
+};
 
 done_testing;

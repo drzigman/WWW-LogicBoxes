@@ -3,55 +3,34 @@ package WWW::LogicBoxes::Types;
 use strict;
 use warnings;
 
+use Data::Validate::URI qw( is_uri );
+
+# VERSION
+# ABSTRACT: WWW::LogicBoxes Moose Type Library
+
 use MooseX::Types -declare => [qw(
-    Int
-    EmailAddress
+    Bool
+    HashRef
     Str
-    PhoneNumber
-    Password
-    Language
-    ContactType
+
+    ResponseType
+    URI
 )];
 
 use MooseX::Types::Moose
-    Int => { -as => 'MooseInt' },
-    Str => { -as => 'MooseStr' };
+    Bool    => { -as => 'MooseBool' },
+    HashRef => { -as => 'MooseHashRef' },
+    Str     => { -as => 'MooseStr' };
 
-use Number::Phone;
+subtype Bool,    as MooseBool;
+subtype HashRef, as MooseHashRef;
+subtype Str,     as MooseStr;
 
-subtype Str, as MooseStr;
-subtype Int, as MooseInt;
-subtype EmailAddress, as MooseStr;
+enum ResponseType, [qw( xml json xml_simple )];
 
-subtype Password,
-    as MooseStr,
-    where {(
-        $_ =~ m/\d+/ && $_ =~ m/\w+/             # Alphanumeric
-        && length($_) >= 8 && length($_) <= 15   # Between 8 and 15 Characters
-    )},
-    message { "$_ is not a valid password."
-        . "  It must be alphanumeric and between 8 and 15 characters" };
+subtype URI, as Str,
+    where { is_uri( $_ ) },
+    message { "$_ is not a valid URI" };
 
-class_type PhoneNumber, { class => 'Number::Phone' };
-
-coerce PhoneNumber,
-    from Str,
-    via { Number::Phone->new( $_ ) };
-
-enum Language, [qw( en )];
-enum ContactType, [qw(
-    Contact
-    AtContact
-    CaContact
-    CnContact
-    CoContact
-    CoopContact
-    DeContact
-    EsContact
-    EuContact
-    NlContact
-    RuContact
-    UkContact
-)];
 
 1;
