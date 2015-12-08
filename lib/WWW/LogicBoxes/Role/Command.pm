@@ -10,8 +10,9 @@ use JSON qw( decode_json );
 use Try::Tiny;
 use Carp;
 
-with 'WWW::LogicBoxes::Role::Command::Raw';
 requires 'response_type';
+with 'WWW::LogicBoxes::Role::Command::Raw',
+     'WWW::LogicBoxes::Role::Command::Domain::Availability';
 
 # VERSION
 # ABSTRACT: Submission of LogicBoxes Commands
