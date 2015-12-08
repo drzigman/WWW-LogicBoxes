@@ -13,6 +13,7 @@ use MooseX::Types -declare => [qw(
     ArrayRef
     Bool
     HashRef
+    Int
     Str
     Strs
 
@@ -25,11 +26,13 @@ use MooseX::Types::Moose
     ArrayRef => { -as => 'MooseArrayRef' },
     Bool     => { -as => 'MooseBool' },
     HashRef  => { -as => 'MooseHashRef' },
+    Int      => { -as => 'MooseInt' },
     Str      => { -as => 'MooseStr' };
 
 subtype ArrayRef, as MooseArrayRef;
 subtype Bool,     as MooseBool;
 subtype HashRef,  as MooseHashRef;
+subtype Int,      as MooseInt;
 subtype Str,      as MooseStr;
 
 subtype Strs,     as ArrayRef[Str];

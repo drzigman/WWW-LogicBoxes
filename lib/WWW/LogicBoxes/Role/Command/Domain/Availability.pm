@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( Bool Strs );
+use WWW::LogicBoxes::Types qw( Bool Int Str Strs );
 
 use WWW::LogicBoxes::DomainAvailability;
 
@@ -61,16 +61,15 @@ sub check_domain_availability {
     return \@domain_availabilities;
 }
 
-=cut
-sub suggest_names {
+sub suggest_domain_names {
     my $self   = shift;
     my (%args) = validated_hash(
         \@_,
-        phrase      => { isa => 'Str' },
-        tlds        => { isa => 'ArrayRef[Str]' },
-        hyphen      => { isa => 'Bool', default => 0 },
-        related     => { isa => 'Bool', default => 0 },
-        num_results => { isa => 'Int',  default => 10 },
+        phrase      => { isa => Str  },
+        tlds        => { isa => Strs },
+        hyphen      => { isa => Bool, default => 0 },
+        related     => { isa => Bool, default => 0 },
+        num_results => { isa => Int,  default => 10 },
     );
 
     my $response = $self->submit({
@@ -84,19 +83,17 @@ sub suggest_names {
         }
     });
 
-    my @domains;
+    my @domain_availabilities;
     for my $sld (keys %{ $response }) {
         for my $tld ( keys %{ $response->{$sld} }) {
-            my $domain = WWW::LogicBoxes::Domain->new({
-                name => $sld . '.' . $tld,
+            push @domain_availabilities, WWW::LogicBoxes::DomainAvailability->new({
+                name         => lc sprintf('%s.%s', $sld, $tld ),
                 is_available => $response->{$sld}{$tld} eq "available" ? 1 : 0,
             });
-
-            push @domains, $domain
         }
     }
 
-    return \@domains;
+    return \@domain_availabilities;
 }
-=cut
+
 1;
