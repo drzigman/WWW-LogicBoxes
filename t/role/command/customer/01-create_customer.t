@@ -150,7 +150,7 @@ subtest 'Create a Full ZA Customer' => sub {
 done_testing;
 
 sub test_customer_creation {
-    my ( $customer_creation_args ) = pos_validated_list( \@_, { isa => 'HashRef' } );
+    my ( $customer_creation_args ) = pos_validated_list( \@_, { isa => HashRef } );
 
     $customer_creation_args->{username} = 'test-' . random_string('ccnnccnnccnnccnn') . '@testing.com';
 
@@ -172,7 +172,7 @@ sub test_customer_creation {
     like($created_customer->id, qr/^\d+$/, "The id is numeric");
 
     my $retrieved_customer;
-    subtest 'Inspect Created Customer - Basic Fields' => sub {
+    subtest 'Inspect Created Customer' => sub {
         note("Customer ID: " . $created_customer->id);
 
         lives_ok {

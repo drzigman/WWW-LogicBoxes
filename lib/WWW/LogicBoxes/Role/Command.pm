@@ -12,6 +12,7 @@ use Carp;
 
 requires 'response_type';
 with 'WWW::LogicBoxes::Role::Command::Raw',
+     'WWW::LogicBoxes::Role::Command::Contact',
      'WWW::LogicBoxes::Role::Command::Customer',
      'WWW::LogicBoxes::Role::Command::Domain::Availability';
 

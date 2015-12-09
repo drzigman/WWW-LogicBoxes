@@ -18,15 +18,17 @@ use MooseX::Types -declare => [qw(
     Str
     Strs
 
+    ContactType
     DomainName
     EmailAddress
     Language
+    NumberPhone
     Password
     PhoneNumber
-    NumberPhone
     ResponseType
     URI
 
+    Contact
     Customer
 )];
 
@@ -47,6 +49,28 @@ subtype Strs,     as ArrayRef[Str];
 
 enum Language, [qw( en )];
 enum ResponseType, [qw( xml json xml_simple )];
+enum ContactType, [qw(
+    Contact
+    AtContact
+    CaContact
+    CnContact
+    CoContact
+    CoopContact
+    DeContact
+    EsContact
+    EuContact
+    NlContact
+    RuContact
+    UkContact
+)];
+
+class_type Contact, { class => 'WWW::LogicBoxes::Contact' };
+coerce Contact, from HashRef,
+    via { WWW::LogicBoxes::Contact->new( $_ ) };
+
+class_type Customer, { class => 'WWW::LogicBoxes::Customer' };
+coerce Customer, from HashRef,
+    via { WWW::LogicBoxes::Customer->new( $_ ) };
 
 class_type NumberPhone, { class => 'Number::Phone' };
 class_type PhoneNumber, { class => 'WWW::LogicBoxes::PhoneNumber' };
@@ -54,10 +78,6 @@ coerce PhoneNumber, from Str,
     via { WWW::LogicBoxes::PhoneNumber->new( $_ ) };
 coerce PhoneNumber, from NumberPhone,
     via { WWW::LogicBoxes::PhoneNumber->new( $_->format ) };
-
-class_type Customer, { class => 'WWW::LogicBoxes::Customer' };
-coerce Customer, from HashRef,
-    via { WWW::LogicBoxes::Customer->new( $_ ) };
 
 subtype DomainName, as Str,
     where { is_domain( $_ ) },

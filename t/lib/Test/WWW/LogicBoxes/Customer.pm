@@ -8,16 +8,16 @@ use Test::Exception;
 use String::Random qw( random_string );
 use MooseX::Params::Validate;
 
-use Test::WWW::LogicBoxes qw(create_api);
+use Test::WWW::LogicBoxes qw( create_api );
 
-use WWW::LogicBoxes::Types qw(EmailAddress Password Str PhoneNumber);
+use WWW::LogicBoxes::Types qw( EmailAddress Password Str PhoneNumber );
 use WWW::LogicBoxes::Customer;
 
 use Exporter 'import';
 our @EXPORT_OK = qw( create_customer );
 
 sub create_customer {
-    my (%args) = validated_hash(
+    my ( %args ) = validated_hash(
         \@_,
         username     => { isa => EmailAddress, optional => 1 },
         password     => { isa => Password,     optional => 1 },
@@ -59,13 +59,13 @@ sub create_customer {
     subtest 'Create Customer' => sub {
         lives_ok {
             $customer = WWW::LogicBoxes::Customer->new(\%args);
-            $api->create_customer({
+            $api->create_customer(
                 customer => $customer,
                 password => $password,
-            });
-        } "Lives through customer creation";
+            );
+        } 'Lives through customer creation';
 
-        note("Customer ID: " . $customer->id);
+        note('Customer ID: ' . $customer->id);
     };
 
     return $customer;
