@@ -12,6 +12,7 @@ use Carp;
 
 requires 'response_type';
 with 'WWW::LogicBoxes::Role::Command::Raw',
+     'WWW::LogicBoxes::Role::Command::Customer',
      'WWW::LogicBoxes::Role::Command::Domain::Availability';
 
 # VERSION
@@ -55,7 +56,7 @@ sub submit {
 
     my $response;
     try {
-        my $method = $args{method};
+        my $method   = $args{method};
         my $raw_json = $self->$method( $args{params} );
 
         if($raw_json =~ /^\d+$/) {

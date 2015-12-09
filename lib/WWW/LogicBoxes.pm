@@ -55,6 +55,7 @@ has response_type => (
 has _base_uri => (
     is       => 'ro',
     isa      => URI,
+    lazy     => 1,
     builder  => '_build_base_uri',
 );
 

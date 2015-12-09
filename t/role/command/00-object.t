@@ -15,6 +15,7 @@ subtest "$ROLE is a well formed role" => sub {
     is_role_ok( $ROLE );
     requires_method_ok( $ROLE, 'response_type' );
     does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Raw' );
+    does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Customer' );
     does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Domain::Availability' );
 };
 
