@@ -44,7 +44,7 @@ subtest "$CLASS has the correct predicates and writers" => sub {
 
 subtest "$CLASS has the correct methods" => sub {
     has_method_ok( $CLASS, 'construct_creation_request' );
-    has_method_ok( $CLASS, '_construct_from_response' );
+    has_method_ok( $CLASS, 'construct_from_response' );
 };
 
 done_testing;

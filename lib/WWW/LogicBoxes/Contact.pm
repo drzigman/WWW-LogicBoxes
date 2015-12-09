@@ -141,7 +141,7 @@ sub construct_creation_request {
     };
 }
 
-sub _construct_from_response {
+sub construct_from_response {
     my $self     = shift;
     my $response = shift;
 

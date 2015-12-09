@@ -10,9 +10,9 @@ use Storable qw( dclone );
 use MooseX::Params::Validate;
 
 use FindBin;
-use lib "$FindBin::Bin/../../../lib";
-use Test::WWW::LogicBoxes qw(create_api);
-use Test::WWW::LogicBoxes::Customer qw(create_customer);
+use lib "$FindBin::Bin/../../../../lib";
+use Test::WWW::LogicBoxes qw( create_api );
+use Test::WWW::LogicBoxes::Customer qw( create_customer );
 
 use WWW::LogicBoxes::Types qw( HashRef );
 

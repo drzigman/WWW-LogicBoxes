@@ -51,7 +51,17 @@ sub get_contact_by_id {
             },
         });
 
-        return WWW::LogicBoxes::Contact->_construct_from_response($response);
+        # TODO: Abstract this into a Factory that can contain multiple sets of attributes
+        # Because we only have normal and .us right now this works for now.
+        if( scalar @{ $response->{contacttype} } == 0 ) {
+            return WWW::LogicBoxes::Contact->construct_from_response($response);
+        }
+        elsif( grep { $_ eq 'domus' } @{ $response->{contacttype} } ) {
+            return WWW::LogicBoxes::Contact::US->construct_from_response($response);
+        }
+        else {
+            croak 'Unknown contact type';
+        }
     }
     catch {
         if( $_ =~ m/^Invalid contact-id/ ) {
