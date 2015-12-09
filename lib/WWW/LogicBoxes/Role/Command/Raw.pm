@@ -1,33 +1,26 @@
-package WWW::LogicBoxes::Role::Commands;
+package WWW::LogicBoxes::Role::Command::Raw;
 
-use v5.10;
 use strict;
 use warnings;
-use utf8;
 
 use Moose::Role;
-use Smart::Comments -ENV;
+use MooseX::Params::Validate;
+
+use WWW::LogicBoxes::Types qw( HashRef Str );
 
 use HTTP::Tiny;
-use English -no_match_vars;
-use Carp qw(croak);
+use URI::Escape qw( uri_escape );
 use XML::LibXML::Simple qw(XMLin);
+use Carp;
 
-use Data::Dumper;
+requires 'username', 'password', 'api_key', '_base_uri', 'response_type';
 
 # VERSION
-# ABSTRACT: Role that serves as the middleware to LogicBoxes
+# ABSTRACT: Construct Methods For Making Raw LogicBoxes Requests
 
-=begin Pod::Coverage
-
-\w+
-
-=end Pod::Coverage
-
-=cut
-
+use Readonly;
 # Create methods to support LogicBoxes API as of 2012-03-02
-my %api_methods = (
+Readonly our $API_METHODS => {
     domains => {
         GET => [
             qw(available suggest-names validate-transfer search customer-default-ns orderid details locks tel/cth-details)
@@ -148,41 +141,116 @@ my %api_methods = (
         ],
         POST => [qw()],
     },
+};
+
+has api_methods => (
+    is       => 'ro',
+    isa      => HashRef,
+    default  => sub { $API_METHODS },
+    init_arg => undef,
 );
 
-my $ua = HTTP::Tiny->new;
-foreach my $api_class ( keys %api_methods ) {
-    foreach my $web_method ( keys %{ $api_methods{$api_class} } ) {
-        foreach my $api_method ( @{ $api_methods{$api_class}{$web_method} } ) {
-            my $sub_name = $api_class . "__" . $api_method;
+sub BUILD {
+    my $self = shift;
 
-            $sub_name =~ s(-)(_)g;
-            $sub_name =~ s(/)(__)g;
+    $self->install_methods();
+}
 
-            __PACKAGE__->meta->add_method(
-                $sub_name => sub {
-                    my ( $self, $args ) = @ARG;
+sub install_methods {
+    my $self = shift;
 
-                    $args->{api_class}  = $api_class;
-                    $args->{api_method} = $api_method;
-                    my $uri = $self->_make_query_string($args);
+    my $ua = HTTP::Tiny->new;
+    for my $api_class ( keys $self->api_methods ) {
+        for my $http_method ( keys $self->api_methods->{ $api_class } ) {
+            for my $api_method (@{ $self->api_methods->{ $api_class }{ $http_method } }) {
+                my $method_name = $api_class . '__' . $api_method;
 
-                    ### Request URI: ($uri)
+                $method_name =~ s|-|_|g;
+                $method_name =~ s|/|__|g;
 
-                    $web_method ~~ [qw(GET POST)]
-                        or croak "I'm not sure if this is supposed to be a get or "
-                        . "a post type request...";
-                    my $response = $ua->request( $web_method, $uri );
-                    if ( $self->response_type eq "xml_simple" ) {
-                        return XMLin( $response->{content} );
+                $self->meta->add_method(
+                    $method_name => sub {
+                        my $self = shift;
+                        my $args = shift;
+
+                        if( !grep { $_ eq $http_method } qw( GET POST ) ) {
+                            croak 'Unable to determine if this is a GET or POST request';
+                        }
+
+                        my $uri = $self->_make_query_string(
+                            api_class  => $api_class,
+                            api_method => $api_method,
+                            params     => $args,
+                        );
+
+                        my $response = $ua->request( $http_method, $uri );
+                        if ( $self->response_type eq "xml_simple" ) {
+                            return XMLin( $response->{content} );
+                        }
+                        else {
+                            return $response->{content};
+                        }
                     }
-                    else {
-                        return $response->{content};
-                    }
-                }
-            );
+                );
+            }
         }
     }
+}
+
+sub _make_query_string {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        api_class  => { isa => Str },
+        api_method => { isa => Str },
+        params     => { isa => HashRef },
+    );
+
+    my $api_class = $args{api_class};
+    $api_class =~ s/_/-/g;
+    $api_class =~ s/__/\//g;
+
+    my $api_method = $args{api_method};
+    $api_method =~ s/_/-/g;
+    $api_method =~ s/__/\//g;
+
+    my $response_type = ( $self->response_type eq 'xml_simple' ) ? 'xml' : $self->response_type;
+
+    my $query_uri = sprintf('%s/api/%s/%s.%s?auth-userid=%s',
+        $self->_base_uri, $api_class, $api_method, $response_type, uri_escape( $self->username ) );
+
+    if( $self->has_password ) {
+      $query_uri .= "&auth-password=" . uri_escape( $self->password )
+    }
+    elsif($self->has_api_key) {
+      $query_uri .= "&api-key=" . uri_escape( $self->apikey )
+    }
+    else {
+        croak 'Unable to construct query string without a password or api_key';
+    }
+
+    $query_uri .= $self->_construct_get_args( $args{params} );
+
+    return $query_uri;
+}
+
+sub _construct_get_args {
+    my $self = shift;
+    my ( $params ) = pos_validated_list( \@_, { isa => HashRef } );
+
+    my $get_args;
+    for my $param_name ( keys $params ) {
+        if( ref $params->{ $param_name } eq 'ARRAY' ) {
+            for my $param_value (@{ $params->{ $param_name } }) {
+                $get_args .= sprintf('&%s=%s', uri_escape( $param_name ), uri_escape( $param_value ) );
+            }
+        }
+        else {
+            $get_args .= sprintf('&%s=%s', uri_escape( $param_name ), uri_escape( $params->{ $param_name } ) );
+        }
+    }
+
+    return $get_args;
 }
 
 1;
