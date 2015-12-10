@@ -19,8 +19,12 @@ use MooseX::Types -declare => [qw(
     Strs
 
     ContactType
+    DateTime
     DomainName
+    DomainNames
+    DomainStatus
     EmailAddress
+    InvoiceOption
     Language
     NexusCategory
     NexusPurpose
@@ -29,9 +33,12 @@ use MooseX::Types -declare => [qw(
     PhoneNumber
     ResponseType
     URI
+    VerificationStatus
 
     Contact
     Customer
+    Domain
+    DomainRegistration
 )];
 
 use MooseX::Types::Moose
@@ -63,10 +70,13 @@ enum ContactType, [qw(
     RuContact
     UkContact
 )];
-enum Language, [qw( en )];
-enum NexusCategory, [qw( C11 C12 C21 C31 C32 )];
-enum NexusPurpose, [qw( P1 P2 P3 P4 P5 )];
-enum ResponseType, [qw( xml json xml_simple )];
+enum DomainStatus,       [ 'InActive', 'Active', 'Suspended', 'Pending Delete Restorable', 'Deleted', 'Archived' ];
+enum InvoiceOption,      [qw( NoInvoice PayInvoice KeepInvoice )];
+enum Language,           [qw( en )];
+enum NexusCategory,      [qw( C11 C12 C21 C31 C32 )];
+enum NexusPurpose,       [qw( P1 P2 P3 P4 P5 )];
+enum ResponseType,       [qw( xml json xml_simple )];
+enum VerificationStatus, [qw( Verified Pending Suspended )];
 
 class_type Contact, { class => 'WWW::LogicBoxes::Contact' };
 coerce Contact, from HashRef,
@@ -75,6 +85,16 @@ coerce Contact, from HashRef,
 class_type Customer, { class => 'WWW::LogicBoxes::Customer' };
 coerce Customer, from HashRef,
     via { WWW::LogicBoxes::Customer->new( $_ ) };
+
+class_type DateTime, { class => 'DateTime' };
+
+class_type Domain, { class => 'WWW::LogicBoxes::Domain' };
+coerce Domain, from HashRef,
+    via { WWW::LogicBoxes::Domain->new( $_ ) };
+
+class_type DomainRegistration, { class => 'WWW::LogicBoxes::DomainRequest::Registration' };
+coerce DomainRegistration, from HashRef,
+    via { WWW::LogicBoxes::DomainRequest::Registration->new( $_ ) };
 
 class_type NumberPhone, { class => 'Number::Phone' };
 class_type PhoneNumber, { class => 'WWW::LogicBoxes::PhoneNumber' };
@@ -86,6 +106,7 @@ coerce PhoneNumber, from NumberPhone,
 subtype DomainName, as Str,
     where { is_domain( $_ ) },
     message { "$_ is not a valid domain" };
+subtype DomainNames, as ArrayRef[DomainName];
 
 subtype EmailAddress, as Str,
     where { is_email( $_ ) },

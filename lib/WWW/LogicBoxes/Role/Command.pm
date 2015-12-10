@@ -14,7 +14,9 @@ requires 'response_type';
 with 'WWW::LogicBoxes::Role::Command::Raw',
      'WWW::LogicBoxes::Role::Command::Contact',
      'WWW::LogicBoxes::Role::Command::Customer',
-     'WWW::LogicBoxes::Role::Command::Domain::Availability';
+     'WWW::LogicBoxes::Role::Command::Domain',
+     'WWW::LogicBoxes::Role::Command::Domain::Availability',
+     'WWW::LogicBoxes::Role::Command::Domain::Registration';
 
 # VERSION
 # ABSTRACT: Submission of LogicBoxes Commands
@@ -72,8 +74,15 @@ sub submit {
         croak "Error Making LogicBoxes Request: $_";
     };
 
-    if(exists $response->{status} && $response->{status} eq "ERROR") {
-        croak $response->{message};
+    if(exists $response->{status} && lc $response->{status} eq "error") {
+        if( exists $response->{message} ) {
+            croak $response->{message};
+        }
+        elsif( exists $response->{error} ) {
+            croak $response->{error};
+        }
+
+        croak 'Unknown error';
     }
 
     return $response;

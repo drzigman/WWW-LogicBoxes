@@ -183,6 +183,8 @@ sub install_methods {
                             params     => $args,
                         );
 
+                        ### URI: ( $uri )
+
                         my $response = $ua->request( $http_method, $uri );
                         if ( $self->response_type eq "xml_simple" ) {
                             return XMLin( $response->{content} );

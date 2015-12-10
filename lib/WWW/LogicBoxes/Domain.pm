@@ -7,60 +7,128 @@ use Moose;
 use MooseX::StrictConstructor;
 use namespace::autoclean;
 
-use Carp;
-use Mozilla::PublicSuffix qw(public_suffix);
+use WWW::LogicBoxes::Types qw( Bool DateTime DomainName DomainNames DomainStatus Int Str VerificationStatus );
+
+use DateTime;
 
 # VERSION
 # ABSTRACT: LogicBoxes Domain Representation
 
-=head1 NAME
-
-WWW::LogicBoxes::Domain - LogicBoxes Representation of a Domain
-
-=head1 ATTRIBUTES
-
-=head2 name
-
-String representation of the domain name
-
-=cut
-
-has name => (
+has id => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Int,
     required => 1,
 );
 
-=head2 is_available
-
-Bool representating if this domain is available or not.
-
-=cut
-
-has is_available => (
-    is  => 'ro',
-    isa => 'Bool',
-    builder => '_build_is_available',
+has name => (
+    is       => 'ro',
+    isa      => DomainName,
+    required => 1,
 );
 
-=head2 tld
+has customer_id => (
+    is       => 'ro',
+    isa      => Int,
+    required => 1,
+);
 
-The B<public suffix> of the domain in question.  This is an important distinction between
-the public suffix and the tld.  google.co.uk has a tld of "uk" and a public suffix of "co.uk"
+has status => (
+    is       => 'ro',
+    isa      => DomainStatus,
+    required => 1,
+);
 
-=cut
+has verification_status => (
+    is       => 'ro',
+    isa      => VerificationStatus,
+    required => 1,
+);
 
-sub tld {
-    my $self = shift;
+has is_locked => (
+    is       => 'ro',
+    isa      => Bool,
+    required => 1,
+);
 
-    return public_suffix($self->name);
-}
+has is_private => (
+    is       => 'ro',
+    isa      => Bool,
+    required => 1,
+);
 
-## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
-sub _build_is_available {
-## use critic
+has created_date => (
+    is       => 'ro',
+    isa      => DateTime,
+    required => 1,
+);
 
-    croak "Not Yet Implemented";
+has expiration_date => (
+    is       => 'ro',
+    isa      => DateTime,
+    required => 1,
+);
+
+has ns => (
+    is       => 'ro',
+    isa      => DomainNames,
+    required => 1,
+);
+
+has registrant_contact_id => (
+    is       => 'ro',
+    isa      => Int,
+    required => 1,
+);
+
+has admin_contact_id => (
+    is       => 'ro',
+    isa      => Int,
+    required => 1,
+);
+
+has technical_contact_id => (
+    is       => 'ro',
+    isa      => Int,
+    required => 1,
+);
+
+has billing_contact_id => (
+    is       => 'ro',
+    isa      => Int,
+    required => 1,
+);
+
+has epp_key => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+sub construct_from_response {
+    my $self     = shift;
+    my $response = shift;
+
+    if( !$response ) {
+        return;
+    }
+
+    return $self->new(
+        id                    => $response->{orderid},
+        name                  => $response->{domainname},
+        customer_id           => $response->{customerid},
+        status                => $response->{currentstatus},
+        verification_status   => $response->{raaVerificationStatus},
+        is_locked             => !!( grep { $_ eq 'transferlock' } @{ $response->{orderstatus} } ),
+        is_private            => $response->{isprivacyprotected} eq 'true',
+        created_date          => DateTime->from_epoch( epoch => $response->{creationtime}, time_zone => 'UTC' ),
+        expiration_date       => DateTime->from_epoch( epoch => $response->{endtime}, time_zone => 'UTC' ),
+        ns                    => [ map { $response->{ $_ } } sort ( grep { $_ =~ m/^ns/ } keys $response ) ],
+        registrant_contact_id => $response->{registrantcontactid},
+        admin_contact_id      => $response->{admincontactid},
+        technical_contact_id  => $response->{techcontactid},
+        billing_contact_id    => $response->{billingcontactid},
+        epp_key               => $response->{domsecret},
+    );
 }
 
 __PACKAGE__->meta->make_immutable;
