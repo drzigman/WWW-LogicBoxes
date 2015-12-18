@@ -66,6 +66,10 @@ sub construct_from_response {
 
     my $contact = WWW::LogicBoxes::Contact->construct_from_response( $response );
 
+    if( !defined $contact ) {
+        return;
+    }
+
     $self->meta->rebless_instance( $contact,
         nexus_purpose  => $response->{ApplicationPurpose},
         nexus_category => $response->{NexusCategory},
