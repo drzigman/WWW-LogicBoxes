@@ -19,6 +19,7 @@ subtest "$ROLE is a well formed role" => sub {
 subtest "$ROLE has the correct methods" => sub {
     has_method_ok( $ROLE, 'create_contact' );
     has_method_ok( $ROLE, 'get_contact_by_id' );
+    has_method_ok( $ROLE, 'delete_contact_by_id' );
 };
 
 done_testing;

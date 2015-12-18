@@ -149,6 +149,10 @@ sub construct_from_response {
         return;
     }
 
+    if( $response->{currentstatus} eq 'Deleted' ) {
+        return;
+    }
+
     my $contact = $self->new({
         id         => $response->{contactid},
         name       => $response->{name},

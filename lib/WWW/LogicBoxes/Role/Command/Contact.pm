@@ -72,4 +72,23 @@ sub get_contact_by_id {
     };
 }
 
+sub delete_contact_by_id {
+    my $self = shift;
+    my ( $id ) = pos_validated_list( \@_, { isa => Int } );
+
+    return try {
+        my $response = $self->submit({
+            method => 'contacts__delete',
+            params => {
+                'contact-id' => $id,
+            },
+        });
+
+        return;
+    }
+    catch {
+        croak $_;
+    };
+}
+
 1;
