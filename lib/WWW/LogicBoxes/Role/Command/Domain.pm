@@ -138,4 +138,50 @@ sub update_domain_contacts {
     };
 }
 
+sub enable_domain_lock_by_id {
+    my $self = shift;
+    my ( $domain_id ) = pos_validated_list( \@_, { isa => Int } );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__enable_theft_protection',
+            params => {
+                'order-id' => $domain_id,
+            }
+        });
+
+        return $self->get_domain_by_id( $domain_id );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+
+        croak $_;
+    };
+}
+
+sub disable_domain_lock_by_id {
+    my $self = shift;
+    my ( $domain_id ) = pos_validated_list( \@_, { isa => Int } );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__disable_theft_protection',
+            params => {
+                'order-id' => $domain_id,
+            }
+        });
+
+        return $self->get_domain_by_id( $domain_id );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+
+        croak $_;
+    };
+}
+
 1;
