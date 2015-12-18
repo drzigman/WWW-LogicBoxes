@@ -69,4 +69,73 @@ sub get_domain_by_name {
     };
 }
 
+sub update_domain_contacts {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id                    => { isa => Int },
+        registrant_contact_id => { isa => Int, optional => 1 },
+        admin_contact_id      => { isa => Int, optional => 1 },
+        technical_contact_id  => { isa => Int, optional => 1 },
+        billing_contact_id    => { isa => Int, optional => 1 },
+    );
+
+    return try {
+        my $original_domain = $self->get_domain_by_id( $args{id} );
+
+        if( !$original_domain ) {
+            croak 'No such domain exists';
+        }
+
+        my $contact_mapping = {
+            registrant_contact_id => 'reg-contact-id',
+            admin_contact_id      => 'admin-contact-id',
+            technical_contact_id  => 'tech-contact-id',
+            billing_contact_id    => 'billing-contact-id',
+        };
+
+        my $num_changes = 0;
+        my $contacts_to_update;
+        for my $contact_type ( keys $contact_mapping ) {
+            if( $args{$contact_type} && $args{$contact_type} != $original_domain->$contact_type ) {
+                $contacts_to_update->{ $contact_mapping->{ $contact_type } } = $args{ $contact_type };
+                $num_changes++;
+            }
+            else {
+                $contacts_to_update->{ $contact_mapping->{ $contact_type } } = $original_domain->$contact_type;
+            }
+        }
+
+        if( $num_changes == 0 ) {
+            return $original_domain;
+        }
+
+        my $response = $self->submit({
+            method => 'domains__modify_contact',
+            params => {
+                'order-id'    => $args{id},
+                %{ $contacts_to_update }
+            }
+        });
+
+        return $self->get_domain_by_id( $args{id} );
+    }
+    catch {
+        if( $_ =~ m/{registrantcontactid=registrantcontactid is invalid}/ ) {
+            croak 'Invalid registrant_contact_id specified';
+        }
+        elsif( $_ =~ m/{admincontactid=admincontactid is invalid}/ ) {
+            croak 'Invalid admin_contact_id specified';
+        }
+        elsif( $_ =~ m/{techcontactid=techcontactid is invalid}/ ) {
+            croak 'Invalid technical_contact_id specified';
+        }
+        elsif( $_ =~ m/{billingcontactid=billingcontactid is invalid}/ ) {
+            croak 'Invalid billing_contact_id specified';
+        }
+
+        croak $_;
+    };
+}
+
 1;
