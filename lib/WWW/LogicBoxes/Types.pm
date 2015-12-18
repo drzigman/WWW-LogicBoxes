@@ -42,6 +42,7 @@ use MooseX::Types -declare => [qw(
     Customer
     Domain
     DomainRegistration
+    DomainTransfer
     PrivateNameServer
     PrivateNameServers
 )];
@@ -81,7 +82,7 @@ enum Language,           [qw( en )];
 enum NexusCategory,      [qw( C11 C12 C21 C31 C32 )];
 enum NexusPurpose,       [qw( P1 P2 P3 P4 P5 )];
 enum ResponseType,       [qw( xml json xml_simple )];
-enum VerificationStatus, [qw( Verified Pending Suspended )];
+enum VerificationStatus, [qw( Verified Pending Suspended NA )];
 
 class_type Contact, { class => 'WWW::LogicBoxes::Contact' };
 coerce Contact, from HashRef,
@@ -100,6 +101,10 @@ coerce Domain, from HashRef,
 class_type DomainRegistration, { class => 'WWW::LogicBoxes::DomainRequest::Registration' };
 coerce DomainRegistration, from HashRef,
     via { WWW::LogicBoxes::DomainRequest::Registration->new( $_ ) };
+
+class_type DomainTransfer, { class => 'WWW::LogicBoxes::DomainRequest::Transfer' };
+coerce DomainTransfer, from HashRef,
+    via { WWW::LogicBoxes::DomainRequest::Transfer->new( $_ ) };
 
 class_type NumberPhone, { class => 'Number::Phone' };
 class_type PhoneNumber, { class => 'WWW::LogicBoxes::PhoneNumber' };
