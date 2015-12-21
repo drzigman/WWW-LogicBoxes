@@ -6,15 +6,16 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int Str );
+use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int PrivateNameServer Str );
 
 use WWW::LogicBoxes::Domain;
+use WWW::LogicBoxes::PrivateNameServer;
 
 use Try::Tiny;
 use Carp;
 
 use Readonly;
-Readonly my $DOMAIN_DETAIL_OPTIONS => [qw( OrderDetails DomainStatus ContactIds NsDetails StatusDetails )];
+Readonly my $DOMAIN_DETAIL_OPTIONS => [qw( All )];
 
 requires 'submit';
 
@@ -285,6 +286,34 @@ sub update_domain_nameservers {
         }
         elsif( $_ =~ m/Same value for new and old NameServers/ ) {
             return $self->get_domain_by_id( $args{id} );
+        }
+
+        croak $_;
+    };
+}
+
+sub create_private_nameserver {
+    my $self = shift;
+    my ( $nameserver ) = pos_validated_list( \@_, { isa => PrivateNameServer, coerce => 1 } );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__add_cns',
+            params => {
+                'order-id' => $nameserver->domain_id,
+                'cns'      => $nameserver->name,
+                'ip'       => $nameserver->ips,
+            }
+        });
+
+        return $self->get_domain_by_id( $nameserver->domain_id );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+        elsif( $_ =~ m/This IpAddress already exists/ ) {
+            croak 'Nameserver with this IP Address already exists';
         }
 
         croak $_;

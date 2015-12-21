@@ -31,6 +31,11 @@ subtest "$CLASS has the correct attributes" => sub {
     has_attribute_ok( $CLASS, 'technical_contact_id' );
     has_attribute_ok( $CLASS, 'billing_contact_id' );
     has_attribute_ok( $CLASS, 'epp_key' );
+    has_attribute_ok( $CLASS, 'private_nameservers' );
+};
+
+subtest "$CLASS has the correct predicates" => sub {
+    has_method_ok( $CLASS, 'has_private_nameservers' );
 };
 
 subtest "$CLASS has the correct methods" => sub {
