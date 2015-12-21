@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( DomainName Int );
+use WWW::LogicBoxes::Types qw( Bool DomainName Int Str );
 
 use WWW::LogicBoxes::Domain;
 
@@ -174,6 +174,79 @@ sub disable_domain_lock_by_id {
         });
 
         return $self->get_domain_by_id( $domain_id );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+
+        croak $_;
+    };
+}
+
+sub enable_domain_privacy {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id     => { isa => Int },
+        reason => { isa => Str, optional => 1 },
+    );
+
+    $args{reason} //= 'Enabling Domain Privacy';
+
+    return $self->_set_domain_privacy(
+        id     => $args{id},
+        status => 1,
+        reason => $args{reason},
+    );
+}
+
+sub disable_domain_privacy {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id     => { isa => Int },
+        reason => { isa => Str, optional => 1 },
+    );
+
+    $args{reason} //= 'Disabling Domain Privacy';
+
+    return try {
+        return $self->_set_domain_privacy(
+            id     => $args{id},
+            status => 0,
+            reason => $args{reason},
+        );
+    }
+    catch {
+        if( $_ =~ m/^Privacy Protection not Purchased/ ) {
+            return $self->get_domain_by_id( $args{id} );
+        }
+
+        croak $_;
+    };
+}
+
+sub _set_domain_privacy {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id     => { isa => Int },
+        status => { isa => Bool },
+        reason => { isa => Str },
+    );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__modify_privacy_protection',
+            params => {
+                'order-id'        => $args{id},
+                'protect-privacy' => $args{status} ? 'true' : 'false',
+                'reason'          => $args{reason},
+            }
+        });
+
+        return $self->get_domain_by_id( $args{id} );
     }
     catch {
         if( $_ =~ m/^No Entity found for Entityid/ ) {
