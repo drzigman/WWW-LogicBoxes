@@ -21,6 +21,8 @@ subtest "$ROLE has the correct methods" => sub {
     has_method_ok( $ROLE, 'create_private_nameserver' );
     has_method_ok( $ROLE, 'rename_private_nameserver' );
     has_method_ok( $ROLE, 'modify_private_nameserver_ip' );
+    has_method_ok( $ROLE, 'delete_private_nameserver_ip' );
+    has_method_ok( $ROLE, 'delete_private_nameserver' );
 };
 
 done_testing;

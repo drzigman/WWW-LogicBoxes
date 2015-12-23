@@ -129,4 +129,65 @@ sub modify_private_nameserver_ip {
         croak $_;
     };
 }
+
+sub delete_private_nameserver_ip {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        domain_id => { isa => Int },
+        name      => { isa => DomainName },
+        ip        => { isa => IPv4 },
+    );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__delete_cns_ip',
+            params => {
+                'order-id' => $args{domain_id},
+                'cns'      => $args{name},
+                'ip'       => $args{ip},
+            }
+        });
+
+        return $self->get_domain_by_id( $args{domain_id} );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+        elsif( $_ =~ m/^Invalid Child Name Server. Its not registered nameserver for this domain/ ) {
+            croak 'No such existing private nameserver';
+        }
+        elsif( $_ =~ m/^\{ipaddress1=Invalid IpAddress .* Its not attached to Nameserver\}/ ) {
+            croak 'IP address not assigned to private nameserver';
+        }
+
+        croak $_;
+    };
+}
+
+sub delete_private_nameserver {
+    my $self = shift;
+    my ( $nameserver ) = pos_validated_list( \@_, { isa => PrivateNameServer, coerce => 1 } );
+
+    return try {
+        for my $ip (@{ $nameserver->ips } ) {
+            $self->delete_private_nameserver_ip(
+                domain_id => $nameserver->domain_id,
+                name      => $nameserver->name,
+                ip        => $ip,
+            );
+        }
+
+        return $self->get_domain_by_id( $nameserver->domain_id );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+
+        croak $_;
+    };
+}
+
 1;
