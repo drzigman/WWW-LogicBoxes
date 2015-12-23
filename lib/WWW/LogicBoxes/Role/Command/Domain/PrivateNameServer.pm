@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( DomainName Int PrivateNameServer );
+use WWW::LogicBoxes::Types qw( DomainName Int IPv4 PrivateNameServer );
 
 use WWW::LogicBoxes::PrivateNameServer;
 
@@ -89,4 +89,44 @@ sub rename_private_nameserver {
     };
 }
 
+sub modify_private_nameserver_ip {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        domain_id => { isa => Int },
+        name      => { isa => DomainName },
+        old_ip    => { isa => IPv4 },
+        new_ip    => { isa => IPv4 },
+    );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__modify_cns_ip',
+            params => {
+                'order-id' => $args{domain_id},
+                'cns'      => $args{name},
+                'old-ip'   => $args{old_ip},
+                'new-ip'   => $args{new_ip},
+            }
+        });
+
+        return $self->get_domain_by_id( $args{domain_id} );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+        elsif( $_ =~ m/^Invalid Child Name Server. Its not registered nameserver for this domain/ ) {
+            croak 'No such existing private nameserver';
+        }
+        elsif( $_ =~ m/^Same value for new and old IpAddress/ ) {
+            croak 'Same value for old and new private nameserver ip';
+        }
+        elsif( $_ =~ m/^Invalid Old IpAddress. Its not attached to Nameserver/ ) {
+            croak 'Nameserver does not have specified ip';
+        }
+
+        croak $_;
+    };
+}
 1;

@@ -20,6 +20,7 @@ subtest "$ROLE is a well formed role" => sub {
 subtest "$ROLE has the correct methods" => sub {
     has_method_ok( $ROLE, 'create_private_nameserver' );
     has_method_ok( $ROLE, 'rename_private_nameserver' );
+    has_method_ok( $ROLE, 'modify_private_nameserver_ip' );
 };
 
 done_testing;
