@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( Bool DomainName Int Str );
+use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int PrivateNameServer Str );
 
 use WWW::LogicBoxes::Domain;
 
@@ -14,7 +14,7 @@ use Try::Tiny;
 use Carp;
 
 use Readonly;
-Readonly my $DOMAIN_DETAIL_OPTIONS => [qw( OrderDetails DomainStatus ContactIds NsDetails StatusDetails )];
+Readonly my $DOMAIN_DETAIL_OPTIONS => [qw( All )];
 
 requires 'submit';
 
@@ -251,6 +251,40 @@ sub _set_domain_privacy {
     catch {
         if( $_ =~ m/^No Entity found for Entityid/ ) {
             croak 'No such domain';
+        }
+
+        croak $_;
+    };
+}
+
+sub update_domain_nameservers {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id          => { isa => Int },
+        nameservers => { isa => DomainNames },
+    );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__modify_ns',
+            params => {
+                'order-id' => $args{id},
+                'ns'       => $args{nameservers},
+            }
+        });
+
+        return $self->get_domain_by_id( $args{id} );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+        elsif( $_ =~ m/is not a valid Nameserver/ ) {
+            croak 'Invalid nameservers provided';
+        }
+        elsif( $_ =~ m/Same value for new and old NameServers/ ) {
+            return $self->get_domain_by_id( $args{id} );
         }
 
         croak $_;

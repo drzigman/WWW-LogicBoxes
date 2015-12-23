@@ -7,7 +7,9 @@ use Moose;
 use MooseX::StrictConstructor;
 use namespace::autoclean;
 
-use WWW::LogicBoxes::Types qw( Bool DateTime DomainName DomainNames DomainStatus Int Str VerificationStatus );
+use WWW::LogicBoxes::Types qw( Bool DateTime DomainName DomainNames DomainStatus Int PrivateNameServers Str VerificationStatus );
+
+use WWW::LogicBoxes::PrivateNameServer;
 
 use DateTime;
 
@@ -104,12 +106,28 @@ has epp_key => (
     required => 1,
 );
 
+has private_nameservers => (
+    is        => 'ro',
+    isa       => PrivateNameServers,
+    required  => 0,
+    predicate => 'has_private_nameservers',
+);
+
 sub construct_from_response {
     my $self     = shift;
     my $response = shift;
 
     if( !$response ) {
         return;
+    }
+
+    my @private_nameservers;
+    for my $private_nameserver_name ( keys $response->{cns} ) {
+        push @private_nameservers, WWW::LogicBoxes::PrivateNameServer->new(
+            domain_id => $response->{orderid},
+            name      => $private_nameserver_name,
+            ips       => $response->{cns}{$private_nameserver_name},
+        );
     }
 
     return $self->new(
@@ -128,6 +146,7 @@ sub construct_from_response {
         technical_contact_id  => $response->{techcontactid},
         billing_contact_id    => $response->{billingcontactid},
         epp_key               => $response->{domsecret},
+        scalar @private_nameservers ? ( private_nameservers => \@private_nameservers ) : ( ),
     );
 }
 

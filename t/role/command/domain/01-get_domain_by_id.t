@@ -33,6 +33,7 @@ subtest 'Get Valid Domain By ID' => sub {
     } 'Lives through retrieving domain';
 
     is_deeply( $retrieved_domain, $domain, 'Correct domain' );
+    ok( !$retrieved_domain->has_private_nameservers, 'Correctly lacks private nameservers' );
 };
 
 done_testing;

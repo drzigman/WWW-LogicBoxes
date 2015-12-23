@@ -18,7 +18,10 @@ subtest "$ROLE is a well formed role" => sub {
     does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Raw' );
     does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Contact' );
     does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Customer' );
+    does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Domain' );
     does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Domain::Availability' );
+    does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer' );
+    does_ok( $ROLE, 'WWW::LogicBoxes::Role::Command::Domain::Registration' );
 };
 
 subtest "$ROLE has the correct methods" => sub {
