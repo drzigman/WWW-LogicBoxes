@@ -9,7 +9,6 @@ use MooseX::Params::Validate;
 use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int PrivateNameServer Str );
 
 use WWW::LogicBoxes::Domain;
-use WWW::LogicBoxes::PrivateNameServer;
 
 use Try::Tiny;
 use Carp;
@@ -286,77 +285,6 @@ sub update_domain_nameservers {
         }
         elsif( $_ =~ m/Same value for new and old NameServers/ ) {
             return $self->get_domain_by_id( $args{id} );
-        }
-
-        croak $_;
-    };
-}
-
-sub create_private_nameserver {
-    my $self = shift;
-    my ( $nameserver ) = pos_validated_list( \@_, { isa => PrivateNameServer, coerce => 1 } );
-
-    return try {
-        my $response = $self->submit({
-            method => 'domains__add_cns',
-            params => {
-                'order-id' => $nameserver->domain_id,
-                'cns'      => $nameserver->name,
-                'ip'       => $nameserver->ips,
-            }
-        });
-
-        return $self->get_domain_by_id( $nameserver->domain_id );
-    }
-    catch {
-        if( $_ =~ m/^No Entity found for Entityid/ ) {
-            croak 'No such domain';
-        }
-        elsif( $_ =~ m/This IpAddress already exists/ ) {
-            croak 'Nameserver with this IP Address already exists';
-        }
-
-        croak $_;
-    };
-}
-
-sub rename_private_nameserver {
-    my $self = shift;
-    my ( %args ) = validated_hash(
-        \@_,
-        domain_id => { isa => Int },
-        old_name  => { isa => DomainName },
-        new_name  => { isa => DomainName },
-    );
-
-    return try {
-        my $response = $self->submit({
-            method => 'domains__modify_cns_name',
-            params => {
-                'order-id' => $args{domain_id},
-                'old-cns'  => $args{old_name},
-                'new-cns'  => $args{new_name},
-            }
-        });
-
-        return $self->get_domain_by_id( $args{domain_id} );
-    }
-    catch {
-        if( $_ =~ m/^No Entity found for Entityid/ ) {
-            croak 'No such domain';
-        }
-        elsif( $_ =~ m/^Invalid Old Child NameServer. Its not registered nameserver for this domain/ ) {
-            croak 'No such existing private nameserver';
-        }
-        elsif( $_ =~ m/^Parent Domain for New child nameServer is not registered by us/
-            || $_ =~ m/^\{hostname=Parent DomainName is not registered by you\}/ ) {
-            croak 'Invalid domain for private nameserver';
-        }
-        elsif( $_ =~ m/^Same value for new and old Child NameServer/ ) {
-            croak 'Same value for old and new private nameserver name';
-        }
-        elsif( $_ =~ m/^\{hostname=Child NameServer already exists\}/ ) {
-            croak 'A nameserver with that name already exists';
         }
 
         croak $_;

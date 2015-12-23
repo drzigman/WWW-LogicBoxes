@@ -16,6 +16,7 @@ with 'WWW::LogicBoxes::Role::Command::Raw',
      'WWW::LogicBoxes::Role::Command::Customer',
      'WWW::LogicBoxes::Role::Command::Domain',
      'WWW::LogicBoxes::Role::Command::Domain::Availability',
+     'WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer',
      'WWW::LogicBoxes::Role::Command::Domain::Registration';
 
 # VERSION

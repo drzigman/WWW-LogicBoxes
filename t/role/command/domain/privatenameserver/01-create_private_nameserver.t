@@ -8,7 +8,7 @@ use Test::Exception;
 use Test::Deep;
 
 use FindBin;
-use lib "$FindBin::Bin/../../../lib";
+use lib "$FindBin::Bin/../../../../lib";
 use Test::WWW::LogicBoxes qw( create_api );
 use Test::WWW::LogicBoxes::Domain qw( create_domain );
 
