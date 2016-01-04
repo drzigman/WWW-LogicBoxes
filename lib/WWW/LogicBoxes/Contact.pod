@@ -118,4 +118,8 @@ Converts $self into a HashRef suitable for creation of a contact with L<LogicBox
 
 Creates an instance of $self from a L<LogicBoxes|http://www.logicboxes.com> response.
 
+=head1 SEE ALSO
+
+For .us domains L<WWW::LogicBoxes::Contact::US> must be used for at least the registrant contact.
+
 =cut
