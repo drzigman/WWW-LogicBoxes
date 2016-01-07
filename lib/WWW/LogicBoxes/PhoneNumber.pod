@@ -1,0 +1,44 @@
+=pod
+
+=head1 NAME
+
+WWW::LogicBoxes::PhoneNumber - PhoneNumber object with LogicBoxes Compatable Formatting
+
+=head1 SYNOPSIS
+
+    use WWW::LogicBoxes::PhoneNumber;
+
+    my $phone_number = WWW::LogicBoxes::PhoneNumber->new( '+18005551212' );
+
+
+    use Number::Phone;
+    use WWW::LogicBoxes::PhoneNumber;
+
+    my $number_phone = Number::Phone->new( '+18005551212' );
+    my $phone_number = WWW::LogicBoxes::PhoneNumber->new( $number_phone );
+
+    print "My Phone Number is $phone_number \n";
+
+=head1 DESCRIPTION
+
+While L<Number::Phone> is an excellent library, there is a bit of inconsistency when it comes to international phone numbers and how to get the full number back out from the L<Number::Phone> object.  The purpose of this object is to abstract away those difficulties and provide a uniform way to work with phone numbers.
+
+L<LogicBoxes|http://www.logicboxes.com> is rather picky when it comes to phone numbers and this library exists to address that.  While you certainly can use this object as a consumer it should be noted that coercions and overloads exist so that it's not needed.  Anywhere that excepts a PhoneNumber will take a string or Number::Phone object and automagically convert it into a WWW::LogicBoxes::PhoneNumber.  When used as a string the full phone number is returned.
+
+=head1 ATTRIBUTES
+
+=head2 B<_number_phone_obj>
+
+This private attribute contains an instance of L<Number::Phone>.  While you certainly can set it in the call to new, it's not nessicary as an around BUILDARGS will take the values passed to new and ensure this attribute is set.
+
+There really is no reason to do anything with this attribute.
+
+=head2 country_code
+
+Lazy built country code assoicated with the phone number.
+
+=head2 number
+
+Lazy built party number (the phone number without the country code) assoicated with the phone number.
+
+=cut
