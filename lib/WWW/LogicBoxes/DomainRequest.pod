@@ -1,0 +1,67 @@
+=pod
+
+=head1 NAME
+
+WWW::LogicBoxes::DomainRequest - Abstract Base Case for Domain Registration and Transfer Requests
+
+=head1 DESCRIPTION
+
+WWW::LogicBoxes::DomainRequest is an abstract base class that is extended for usage in L<WWW::LogicBoxes::DomainRequest::Registration> and L<WWW::LogicBoxes::DomainRequest::Transfer>.  It should not be instantiated directly.
+
+=head1 ATTRIBUTES
+
+=head2 B<name>
+
+The full domain name.
+
+=head2 B<customer_id>
+
+L<LogicBoxes Customer|WWW::LogicBoxes::Customer> id that is purchasing this domain.
+
+=head2 B<ns>
+
+Array Ref of domain names that should be used as the authoritive nameservers.
+
+=head2 B<registrant_contact_id>
+
+A L<Contact|WWW::LogicBoxes::Contact> id for the Registrant.
+
+=head2 B<admin_contact_id>
+
+A L<Contact|WWW::LogicBoxes::Contact> id for the Admin.
+
+=head2 B<technical_contact_id>
+
+A L<Contact|WWW::LogicBoxes::Contact> id for the Technical.
+
+=head2 B<billing_contact_id>
+
+A L<Contact|WWW::LogicBoxes::Contact> id for the Billing.
+
+=head2 is_private
+
+Boolean indicating if this domain uses WHOIS Privacy.  Defaults to false.
+
+=head2 invoice_option
+
+Indicates to L<LogicBoxes|http://www.logicboxes.com> how invoicing of the L<customer|WWW::LogicBoxes::Customer> for this domain should occur.  It must be one of the following values:
+
+=over 4
+
+=item NoInvoice
+
+Do not generate an invoice, just process the order.
+
+=item PayInvoice
+
+Generate an invoice and check the L<customer's|WWW::LogicBoxes::Customer> account balance.  If there are sufficent funds pay the invoice and process the order.  Otherwise, hold the order in a pending status.
+
+=item KeepInvoice
+
+Generate an invoice for the L<customer|WWW::LogicBoxes::Customer> to pay at some later point but process the order right now.
+
+=back
+
+The default value is 'NoInvoice'.
+
+=cut
