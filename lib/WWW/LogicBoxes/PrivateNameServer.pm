@@ -9,6 +9,9 @@ use namespace::autoclean;
 
 use WWW::LogicBoxes::Types qw( DomainName Int IPv4s );
 
+# VERSION
+# ABSTRACT: LogicBoxes Private Nameserver
+
 has domain_id => (
     is       => 'ro',
     isa      => Int,
