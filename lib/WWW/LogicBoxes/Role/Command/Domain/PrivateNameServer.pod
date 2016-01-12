@@ -1,0 +1,148 @@
+=pod
+
+=head1 NAME
+
+WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer - Private Nameserver Related Operations
+
+=head1 SYNOPSIS
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Domain;
+    use WWW::LogicBoxes::PrivateNameServer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $domain      = WWW::LogicBoxes::Domain->new( ... );
+
+    # Creation
+    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
+        domain_id => $domain->id,
+        name      => 'ns1.' . $domain->name,
+        ips       => [ '4.2.2.1' ],
+    );
+
+    $logic_boxes->create_private_nameserver( $private_nameserver );
+
+    # Rename
+    $logic_boxes->rename_private_nameserver(
+        domain_id => $domain->id,
+        old_name  => 'ns1.' . $domain->name,
+        new_name  => 'ns2.' . $domain->name,
+    );
+
+    # Modify IP
+    $logic_boxes->modify_private_nameserver_ip(
+        domain_id => $domain->id,
+        name      => 'ns1.' . $domain->name,
+        old_ip    => '4.2.2.1',
+        new_ip    => '8.8.8.8',
+    );
+
+    # Delete IP
+    $logic_boxes->delete_private_nameserver_ip(
+        domain_id => $domain->id,
+        name      => 'ns1.' . $domain->name,
+        ip        => '4.2.2.1',
+    );
+    
+    # Delete Private Nameserver
+    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new( ... );
+    $logic_boxes->delete_private_nameserver( $private_nameserver )
+
+=head1 REQUIRES
+
+=over 4
+
+=item submit
+
+=item get_domain_by_id
+
+=back
+
+=head1 DESCRIPTION
+
+Implementes Private Nameserver related operations (what L<LogicBoxes|http://www.logicboxes.com> refers to as "Child Nameservers") with the L<LogicBoxes|http://www.logicboxes.com> API.
+
+B<NOTE> All private nameservers must be a subdomain of the parent domain.  If the domain name is test-domain.com, ns1.test-domain.com would be valid while ns1.something-else.com would not be.
+
+=head1 METHOD
+
+=head2 create_private_nameserver
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Domain;
+    use WWW::LogicBoxes::PrivateNameServer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $domain      = WWW::LogicBoxes::Domain->new( ... );
+
+    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
+        domain_id => $domain->id,
+        name      => 'ns1.' . $domain->name,
+        ips       => [ '4.2.2.1' ],
+    );
+
+    $logic_boxes->create_private_nameserver( $private_nameserver );
+
+Given a L<WWW::LogicBoxes::PrivateNameServer> or a HashRef that can be coerced into a L<WWW::LogicBoxes::PrivateNameServer>, creates the specified private nameserver with L<LogicBoxes|http://www.logicboxes.com>.
+
+=head2 rename_private_nameserver
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Domain;
+
+    my $domain = WWW::LogicBoxes::Domain->new( ... );
+
+    $logic_boxes->rename_private_nameserver(
+        domain_id => $domain->id,
+        old_name  => 'ns1.' . $domain->name,
+        new_name  => 'ns2.' . $domain->name,
+    );
+
+Given an Integer L<domain|WWW::LogicBoxes::Domain> id, the old nameserver hostname, and a new nameserver hostname, renames a L<WWW::LogicBoxes::PrivateNameServer>.
+
+=head2 modify_private_nameserver_ip
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Domain;
+
+    my $domain = WWW::LogicBoxes::Domain->new( ... );
+
+    $logic_boxes->modify_private_nameserver_ip(
+        domain_id => $domain->id,
+        name      => 'ns1.' . $domain->name,
+        old_ip    => '4.2.2.1',
+        new_ip    => '8.8.8.8',
+    );
+
+Given an Integer L<domain|WWW::LogicBoxes::Domain> id, nameserver hostname, an old_ip (that is currently assigned to the L<private nameserver|WWW::LogicBoxes::PrivateNameServer>), and a new_ip, modifies the ips assoicated with a L<WWW::LogicBoxes::PrivateNameServer>.
+
+=head2 delete_private_nameserver_ip
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Domain;
+
+    my $domain = WWW::LogicBoxes::Domain->new( ... );
+
+    $logic_boxes->delete_private_nameserver_ip(
+        domain_id => $domain->id,
+        name      => 'ns1.' . $domain->name,
+        ip        => '4.2.2.1',
+    );
+
+Given an Integer L<domain|WWW::LogicBoxes::Domain> id, nameserver hostname, and an ip (that is currently assigned to the L<private nameserver|WWW::LogicBoxes::PrivateNameServer>), removes the ip assoicated with a L<WWW::LogicBoxes::PrivateNameServer>.
+
+=head2 delete_private_nameserver
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Domain;
+    use WWW::LogicBoxes::PrivateNameServer;
+
+    my $domain = WWW::LogicBoxes::Domain->new( ... );
+
+    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new( ... );
+    $logic_boxes->delete_private_nameserver( $private_nameserver )
+
+
+Given a L<WWW::LogicBoxes::PrivateNameServer> or a HashRef that can be coerced into a L<WWW::LogicBoxes::PrivateNameServer>, deletes the specified private nameserver with L<LogicBoxes|http://www.logicboxes.com>.
+
+=cut
