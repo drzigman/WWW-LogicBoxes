@@ -1,0 +1,75 @@
+=pod
+
+=head1 NAME
+
+WWW::LogicBoxes::Role::Command::Customer - Customer Related Operations
+
+=head1 SYNPOSIS
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Customer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    # Creation
+    my $customer = WWW::LogicBoxes->new( ... );
+    $logic_boxes->create_customer(
+        customer => $customer,
+        password => 'Top Secret!',
+    );
+
+    # Retrieval
+    my $retrieved_customer = $logic_boxes->get_customer_by_id( $customer->id );
+    my $retrieved_customer = $logic_boxes->get_customer_by_username( $customer->username ); # An email address
+
+=head1 REQUIRES
+
+submit
+
+=head1 DESCRIPTION
+
+Implements customer related operations with the L<LogicBoxes's|http://www.logicboxes.com> API.
+
+=head1 METHODS
+
+=head2 create_customer
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Customer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    my $customer = WWW::LogicBoxes->new( ... );
+    $logic_boxes->create_customer(
+        customer => $customer,
+        password => 'Top Secret!',
+    );
+
+    print 'New customer id: ' . $customer->id . "\n";
+
+Given a L<WWW::LogicBoxes::Customer> or a HashRef that can coerced into a L<WWW::LogicBoxes::Customer> and a password, creates the specified customer.
+
+=head2 get_customer_by_id
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Customer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    my $retrieved_customer = $logic_boxes->get_customer_by_id( 42 );
+
+Given an Integer ID, will return an instace of L<WWW::LogicBoxes::Customer>.  Returns undef if there is no matching L<WWW::LogicBoxes::Customer> with the specified id.
+
+=head2 get_customer_by_username
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Customer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $retrieved_customer = $logic_boxes->get_customer_by_username(
+        'domainbuyer@test-domain.com'
+    );
+
+Given an Email Address of a customer, will return an instance of L<WWW::LogicBoxes::Customer>.  Returns undef if there is no matching L<WWW::LogicBoxes::Customer> with the specified email address.
+
+=cut

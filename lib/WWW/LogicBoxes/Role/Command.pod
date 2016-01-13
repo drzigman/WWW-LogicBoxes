@@ -1,0 +1,67 @@
+=pod
+
+=head1 NAME
+
+WWW::LogicBoxes::Role::Command - Basic Logic for Submission of Requests to LogicBoxes
+
+=head1 SYNOPSIS
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Contact;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $contact     = WWW::LogicBoxes::Contact->new( ... );
+
+    my $response = $logic_boxes->submit({
+        method => 'contacts__add',
+        params => $contact->construct_creation_request(),
+    });
+
+=head1 WITH
+
+=over 4
+
+=item L<WWW::LogicBoxes::Role::Command::Raw>
+
+=item L<WWW::LogicBoxes::Role::Command::Contact>
+
+=item L<WWW::LogicBoxes::Role::Command::Customer>
+
+=item L<WWW::LogicBoxes::Role::Command::Domain>
+
+=item L<WWW::LogicBoxes::Role::Command::Domain::Availability>
+
+=item L<WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer>
+
+=item L<WWW::LogicBoxes::Role::Command::Domain::Registration>
+
+=back
+
+=head1 REQUIRES
+
+response_type
+
+=head1 DESCRIPTION
+
+Primary interface to L<LogicBoxes|http://www.logicboxes.com> API that is used by the rest of the WWW::LogicBoxes::Role::Command::* roles.  The only reason a consumer would use the submit method directly would be if there was no corresponding Command for the needed operation.
+
+=head1 METHODS
+
+=head2 submit
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Contact;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $contact     = WWW::LogicBoxes::Contact->new( ... );
+
+    my $response = $logic_boxes->submit({
+        method => 'contacts__add',
+        params => $contact->construct_creation_request(),
+    });
+
+The submit method is what sends requests over to L<LogicBoxes|http://www.logicboxes.com>.  It accepts a L<raw method|WWW::LogicBoxes::Role::Command::Raw> and an HashRef of params.  For details on the structure of the params please see L<WWW::LogicBoxes::Role::Command::Raw>.
+
+The submit method returns a HashRef that represents the data returned by LogicBoxes.  There is logic built into submit such that requests are always made with a JSON response which is what drives the creation of the HashRef form the response.
+
+=cut

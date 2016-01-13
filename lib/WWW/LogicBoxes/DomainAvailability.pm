@@ -12,6 +12,9 @@ use WWW::LogicBoxes::Types qw( Bool DomainName Str );
 
 use Mozilla::PublicSuffix;
 
+# VERSION
+# ABSTRACT: LogicBoxes Domain Availability Response
+
 has name => (
     is       => 'ro',
     isa      => DomainName,
