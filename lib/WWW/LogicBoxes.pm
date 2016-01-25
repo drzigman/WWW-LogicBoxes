@@ -2,289 +2,344 @@ package WWW::LogicBoxes;
 
 use strict;
 use warnings;
-use utf8;
 
 use Moose;
-use Moose::Util qw(throw_exception);
-use Moose::Util::TypeConstraints;
-use Moose::Exception::AttributeIsRequired;
-use Smart::Comments -ENV;
+use MooseX::StrictConstructor;
+use MooseX::Aliases;
+use namespace::autoclean;
 
-use Carp qw(croak);
+use WWW::LogicBoxes::Types qw( Bool ResponseType Str URI );
 
-use URI::Escape qw(uri_escape);
-use English -no_match_vars;
-use IO::Socket::SSL;
+use Carp;
 
 # VERSION
 # ABSTRACT: Interact with LogicBoxes reseller API
 
-with "WWW::LogicBoxes::Role::Commands",
-  "WWW::LogicBoxes::Role::Submit",
-  "WWW::LogicBoxes::Role::Command::CheckAvailability";
-
-# Supported Response Types:
-my @response_types = qw(xml json xml_simple);
-subtype
-  "LogicBoxesResponseType" => as "Str",
-  => where {
-    my $type = $ARG;
-    { $type eq $ARG and return 1 for @response_types; 0 }
-  },
-  => message {
-    "response_type must be one of " . join ", ", @response_types;
-  };
+use Readonly;
+Readonly my $LIVE_BASE_URI => 'https://httpapi.com';
+Readonly my $TEST_BASE_URI => 'https://test.httpapi.com';
 
 has username => (
-    isa      => "Str",
-    is       => "ro",
+    is       => 'ro',
+    isa      => Str,
     required => 1,
 );
 
 has password => (
-    isa       => "Str",
-    is        => "ro",
+    is        => 'ro',
+    isa       => Str,
     required  => 0,
     predicate => 'has_password',
 );
 
-has apikey => (
-    isa       => "Str",
-    is        => "ro",
+has api_key => (
+    is        => 'ro',
+    isa       => Str,
     required  => 0,
-    predicate => 'has_apikey',
+    alias     => 'apikey',
+    predicate => 'has_api_key',
 );
 
 has sandbox => (
-    isa     => "Bool",
-    is      => "ro",
-    default => 0
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
 );
 
 has response_type => (
-    isa     => "LogicBoxesResponseType",
-    is      => "rw",
-    default => "xml"
+    is       => 'rw',
+    isa      => ResponseType,
+    default  => 'xml',
 );
 
 has _base_uri => (
-    isa     => "Str",
-    is      => "ro",
-    lazy    => 1,
-    default => \&_default__base_uri
+    is       => 'ro',
+    isa      => URI,
+    lazy     => 1,
+    builder  => '_build_base_uri',
 );
+
+with 'WWW::LogicBoxes::Role::Command';
 
 around BUILDARGS => sub {
     my $orig  = shift;
     my $class = shift;
     my $args  = shift;
 
-    if( !exists $args->{username} ) {
-        ### No Username Specified
+    # Assign since api_key or apikey are both valid due to backwards compaitability
+    my $password = $args->{password};
+    my $api_key  = $args->{apikey} // $args->{api_key};
 
-        throw_exception(AttributeIsRequired => attribute_name => 'username',
-            class_name => $class,
-            params     => $args,
-        );
+    if( !$password && !$api_key ) {
+        croak 'A password or api_key must be specified';
     }
 
-    if( !exists $args->{password} && !exists $args->{apikey} ) {
-        ### No Password and No API Key Specified
-
-        throw_exception(AttributeIsRequired => attribute_name => 'password',
-            class_name => $class,
-            params     => $args,
-        );
-    }
-
-    if( exists $args->{password} && exists $args->{apikey} ) {
-        ### Both a Password and an API Key Were Specified
-
-        croak "You must specify a password or an apikey, not both.";
+    if( $password && $api_key ) {
+        croak "You must specify a password or an api_key, not both";
     }
 
     return $class->$orig($args);
 };
 
+sub _build_base_uri {
+    my $self = shift;
 
-## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
-sub _make_query_string {
-## use critic
-    my ( $self, $opts ) = @_;
-
-    unless ( defined $opts->{api_class} ) {
-        croak
-"You must specify the class (domains, contacts, etc...) for the request.  See the class required for yoru specific operation at http://manage.logicboxes.com/kb/answer/751.";
-    }
-
-    unless ( defined $opts->{api_method} ) {
-        croak
-"You must specify the method (create, available, etc...) for the request.  See the method required for your specific operation at http://manage.logicboxes.com/kb/answer/751.";
-    }
-
-    my $api_class = $opts->{api_class};
-    delete $opts->{api_class};
-
-    my $api_method = $opts->{api_method};
-    delete $opts->{api_method};
-
-    $api_class =~ s/_/-/g;
-    $api_class =~ s/__/\//g;
-    $api_method =~ s/_/-/g;
-    $api_method =~ s/__/\//g;
-
-    my $response_type =
-      ( $self->response_type eq 'xml_simple' ) ? 'xml' : $self->response_type;
-
-    my $query_uri = $self->_base_uri . "api/" . $api_class . "/" . $api_method . "."
-        . $response_type . "?auth-userid=" . uri_escape( $self->username );
-
-    if( $self->has_password ) {
-      $query_uri .= "&auth-password=" . uri_escape( $self->password )
-    }
-    elsif($self->has_apikey) {
-      $query_uri .= "&api-key=" . uri_escape( $self->apikey )
-    }
-
-    $query_uri .= "&" . _build_get_args($opts);
-
-    return $query_uri;
+    return $self->sandbox ? $TEST_BASE_URI : $LIVE_BASE_URI;
 }
-
-sub _build_get_args {
-    my %args = %{ $_[0] };
-
-    #TODO: Clean this up
-    ## no critic (BuiltinFunctions::ProhibitComplexMappings)
-    return join "&", map {
-        my $key = $_;
-        map { join "=", $key, uri_escape($_) }
-          ref $args{$_}
-          ? @{ $args{$_} }
-          : $args{$_}
-    } keys %args;
-    ## use critic
-}
-
-sub _default__base_uri {
-    my ($self) = @ARG;
-
-    my $sandbox = "https://test.httpapi.com/";
-    my $live    = "https://httpapi.com/";
-
-    return $self->sandbox ? $sandbox : $live;
-}
-
-__PACKAGE__->meta->make_immutable;
 
 1;
 
 __END__
-
-=encoding utf8
+=pod
 
 =head1 NAME
+
 WWW::LogicBoxes - Interact with LogicBoxes Reseller API
 
 =head1 SYNOPSIS
 
     use strict;
     use warnings;
+
     use WWW::LogicBoxes;
 
-    my $logic_boxes = WWW::LogicBoxes->new({
-        username	=> "resellid",
+    my $logic_boxes = WWW::LogicBoxes->new(
+        username      => 'resellerid',
 
-        # You may specify a password OR an apikey
-        password	=> "resellpw",
-        apikey      => "apikey",
+        # You may specify a password OR an api_key
+        password      => 'Top S3cr3t!',
+        api_key       => 'reseller_api_key',
 
-        response_type => "xml",
-        sandbox		  => 1
-    });
+        response_type => 'json',
+        sandbox       => 0,
+    );
 
-    my $response = $logic_boxes->domains__available({
-        'domain-name' 	=> ["google", "cnn"],
-        'tlds'		=> ["com","net"]
-    } );
+    my $domain_availabilities = $logic_boxes->check_domain_availability(
+        slds => [qw( cpan drzigman brainstormincubator ],
+        tlds => [qw( com net org )],
+        suggestions => 0,
+    );
+
+=head1 DESCRIPTION
+
+L<WWW::LogicBoxes> is a module for interacting with the L<LogicBoxes|http://www.logicboxes.com/> API.  LogicBoxes is a domain registrar and the API performs operations such as checking domain availability, purchasing domains, and managing them.
+
+This module is broken down into two primary components (documented below).  These are L<COMMANDS> which are used for making requests and L<OBJECTS> which are used to represent data.  Below these, documentation for the L<WWW::LogicBoxes> module is included.
+
+=head1 COMMANDS
+
+Commands are how operations are performed using the L<WWW::LogicBoxes> API.  They are seperated into related operations, for documentation on the specific command please see the linked pages.
+
+=head2 L<Raw|WWW::LogicBoxes::Role::Command::Raw>
+
+Low level direct access to the LogicBoxes API.  You rarely want to make use of this and instead want to use the abstracted commands outlined below.
+
+=head2 L<Customer|WWW::LogicBoxes::Role::Command::Customer>
+
+Customer creation and retrieval.  All domains belong to a customer.
+
+=over 4
+
+=item L<create_customer|WWW::LogicBoxes::Role::Command::Customer/create_customer>
+
+=item L<get_customer_by_id|WWW::LogicBoxes::Role::Command::Customer/get_customer_by_id>
+
+=item L<get_customer_by_username|WWW::LogicBoxes::Role::Command::Customer/get_customer_by_username>
+
+=back
+
+=head2 L<Contact|WWW::LogicBoxes::Role::Command::Contact>
+
+Contacts are used in whois information and are required for domain registration.
+
+=over 4
+
+=item L<create_contact|WWW::LogicBoxes::Role::Command::Contact/create_contact>
+
+=item L<get_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/get_contact_by_id>
+
+=item L<delete_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/delete_contact_by_id>
+
+=back
+
+=head2 L<Domain Availability|WWW::LogicBoxes::Role::Command::Domain::Availability>
+
+Used for checking to see if a domain is available for registration as well as getting suggestions of other potentially relevant domains.
+
+=over 4
+
+=item L<check_domain_availability|WWW::LogicBoxes::Role::Command::Domain::Availability/check_domain_availability>
+
+=item L<suggest_domain_names|WWW::LogicBoxes::Role::Command::Domain::Availability/suggest_domain_names>
+
+=back
+
+=head2 L<Domain Registration|WWW::LogicBoxes::Role::Command::Domain::Registration>
+
+New Domain Registration.
+
+=over 4
+
+=item L<register_domain|WWW::LogicBoxes::Role::Command::Domain::Registration/register_domain>
+
+=item L<delete_domain_registration_by_id|WWW::LogicBoxes::Role::Command::Domain::Registration/delete_domain_registration_by_id>
+
+=back
+
+=head2 L<Domain Transfer|WWW::LogicBoxes::Role::Command::Domain::Transfer>
+
+New Domain Transfers.
+
+=over 4
+
+=item L<is_domain_transferable|WWW::LogicBoxes::Role::Command::Domain::Transfer/is_domain_transferable>
+
+=item L<transfer_domain|WWW::LogicBoxes::Role::Command::Domain::Transfer/transfer_domain>
+
+=item L<delete_domain_transfer_by_id|WWW::LogicBoxes::Role::Command::Domain::Transfer/delete_domain_transfer_by_id>
+
+=item L<resend_transfer_approval_mail_by_id|WWW::LogicBoxes::Role::Command::Domain::Transfer/resend_transfer_approval_mail_by_id>
+
+=back
+
+=head2 L<Domain|WWW::LogicBoxes::Role::Command::Domain>
+
+Retrieval of and management of registered domains.
+
+=over 4
+
+=item L<get_domain_by_id|WWW::LogicBoxes::Role::Command::Domain/get_domain_by_id>
+
+=item L<get_domain_by_name|WWW::LogicBoxes::Role::Command::Domain/get_domain_by_name>
+
+=item L<update_domain_contacts|WWW::LogicBoxes::Role::Command::Domain/update_domain_contacts>
+
+=item L<enable_domain_lock_by_id|WWW::LogicBoxes::Role::Command::Domain/enable_domain_lock_by_id>
+
+=item L<disable_domain_lock_by_id|WWW::LogicBoxes::Role::Command::Domain/disable_domain_lock_by_id>
+
+=item L<update_domain_nameservers|WWW::LogicBoxes::Role::Command::Domain/update_domain_nameservers>
+
+=back
+
+=head2 L<Domain Private Nameservers|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer>
+
+I<Private> nameservers are those that are based on the registered domain.  For example, a domain of test-domain.com could have private nameservers ns1.test-domain.com and ns2.test-domain.com.
+
+=over 4
+
+=item L<create_private_nameserver|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/create_private_nameserver>
+
+=item L<rename_private_nameserver|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/rename_private_nameserver>
+
+=item L<modify_private_nameserver_ip|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/modify_private_nameserver_ip>
+
+=item L<delete_private_nameserver_ip|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/delete_private_nameserver_ip>
+
+=item L<delete_private_nameserver|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/deelte_private_nameserver>
+
+=back
+
+=head1 OBJECTS
+
+Rather than working with messy JSON objects, WWW::LogicBoxes implements a series of L<Moose> objects for making requests and processing responses.  All commands that take an object have coercion so a HashRef can be used in it's place.
+
+=head2 L<WWW::LogicBoxes>
+
+Primary interface to LogicBoxes.  Documented further below.
+
+=head2 L<WWW::LogicBoxes::Contact>
+
+WHOIS data contacts.  Typically (with few exceptions) domains contains a Registrant, Admin, Technical, and Billing contact.
+
+=head2 L<WWW::LogicBoxes::Contact::US>
+
+Extended contact used for .us domain registrations that contains the required L<Nexus Data|http://www.neustar.us/the-ustld-nexus-requirements/>.
+
+=head2 L<WWW::LogicBoxes::Customer>
+
+A LogicBoxes customer under the reseller account.
+
+=head2 L<WWW::LogicBoxes::Domain>
+
+A registered domain and all of it's related information.
+
+=head2 L<WWW::LogicBoxes::DomainTransfer>
+
+A pending domain transfer and all of it's related information.
+
+=head2 L<WWW::LogicBoxes::DomainAvailability>
+
+A response to a domain availability request.  Contains the status of the domain and if it is available for registration.
+
+=head2 L<WWW::LogicBoxes::DomainRequest::Registration>
+
+Request to register a domain.
+
+=head2 L<WWW::LogicBoxes::DomainRequest::Transfer>
+
+Request to transfer a domain.
+
+=head2 L<WWW::LogicBoxes::PrivateNameServer>
+
+Private Name Server record for a domain.  Not all domains will have these.
+
+=head1 WITH
+
+L<WWW::LogicBoxes::Role::Command>
+
+=head1 ATTRIBUTES
+
+=head2 B<username>
+
+The reseller id to use.
+
+=head2 password
+
+B<NOTE> Password based authentication is now deprecated and is not allowed unless specifically requested from LogicBoxes for your reseller account.  Instead, you should be using the api_key.
+
+=head2 api_key
+
+The API Key used for authentication.  Either the password or the api_key B<MUST> be specified, but B<NOT> both.  For backwards compatability B<apikey> is an alias.
+
+=head2 sandbox
+
+Defaults to false.  Determines if requests should go to the production system L<https://httpapi.com> or the development environment L<https://test.httpapi.com>
+
+=head2 response_type
+
+Defaults to "xml."  Valid values include:
+
+=over 4
+
+=item xml
+
+=item json
+
+=item xml_simple
+
+=back
+
+It should be noted that this setting is really only relevant when making L<Raw|WWW::LogicBoxes::Role::Command::Raw> requests of the LogicBoxes API.  When doing so this attribute defines the format of the responses.
+
+Defaults to
 
 =head1 METHODS
 
 =head2 new
 
-Constructs a new object for interacting with the LogicBoxes API.  If the "sandbox" parameter is specified then the API calls are made against the LogicBoxes test server instead of the production server.
+    my $logic_boxes = WWW::LogicBoxes->new(
+        username      => 'resellerid',
 
-response_type is also an object argument that dictates the format in which the responses from LogicBoxes' API will be in.  The default is XML, all supported protocols are:
+        # You may specify a password OR an api_key
+        password      => 'Top S3cr3t!',
+        api_key       => 'reseller_api_key',
 
-=over
+        response_type => 'json',
+        sandbox       => 0,
+    );
 
-=item * xml
-
-=item * json
-
-=item * xml_simple
-
-=back
-
-=head2 Suggest Domains (and many others)
-
-    my $response = $logic_boxes->domains__suggest_names({
-        'keyword'	=> 'car',
-        'tlds'		=> ['com', 'net', 'org'],
-        'no-of-results'	=> 10,
-        'hypehn-allowed'=> 'false',
-        'add-related'	=> 'true',
-    });
-
-This module implements all of the API methods available using the LogicBoxes API by abstracting out the need to specify the HTTP method (POST or GET) and automagically building the request URI according to the documentation provided by Logic Boxes (see the Logic Boxes API user guide at http://manage.logicboxes.com/kb/answer/744).  To fully understand the method names it's best to take a specific example (in this case the suggestion of domain names).
-
-Logic Boxes' API states that this method is part of their HTTP API, specifically the Domain Category and more specifically the Suggest Names method.  The sample URI for this request would then be:
-
-https://test.httpapi.com/api/domains/suggest-names.json?auth-userid=0&auth-password=password&keyword=domain&tlds=com&tlds=net&no-of-results=0&hyphen-allowed=true&add-related=true
-
-The method name is built using the URI that the request is expected at in a logical way.  Since this method is a member of the Domains Category and is specifically Suggest Names we end up:
-
-    $logic_boxes->domains__suggest_names
-
-Where everything before the first "__" is the category and everything following it is the specific method (with - replaced with _ and / replaced with __).
-
-=head1 Arguments Passed to Methods
-
-The specific arguments each method requires is not enforced by this module, rather I leave it to the developer to reference the LogicBoxes API (again at http://manage.logicboxes.com/kb/answer/744) and to pass the correct arguments to each method as a hash.  There are two "odd" cases that you should be aware of with respect to the way arguments must be passed.
-
-=head2 Repeated Elements
-
-For methods such as domains__check that accept the same "key" multiple times:
-
-https://test.httpapi.com/api/domains/available.json?auth-userid=0&auth-password=password&domain-name=domain1&domain-name=domain2&tlds=com&tlds=net
-
-This module accepts a hash where the key is the name of the argument (such as domain-name) and the value is an array of values you wish to pass:
-
-    $logic_boxes->domains__available({
-        'domain-name' 	=> ["google", "cnn"],
-        'tlds'		=> ["com","net"]
-    });
-
-This is interpreted for you automagically into the repeating elements when the API's URI is built.
-
-=head2 Array of Numbered Elements
-
-For methods such as contacts__set_details that accep the same key multiple times except an incrementing digit is appended:
-
-https://test.httpapi.com/api/contacts/set-details.json?auth-userid=0&auth-password=password&contact-id=0&attr-name1=sponsor1&attr-value1=0&product-key=dotcoop
-
-This module still accepts a hash and leaves it to the developer to handle the appending of the incrementing digit to the keys of the hash:
-
-    $logic_boxes->contacts__set_details({
-        'contact-id'	=> 1337,
-        'attr-name1'	=> 'sponsor',
-        'attr-value1'	=> '0',
-        'attr-name2'	=> 'CPR',
-        'attr-value2'	=> 'COO',
-        'product-key'	=> 'dotcoop'
-    });
-
-In this way you are able to overcome the need for unique keys and still pass the needed values onto LogicBoxes' API.
+Creates a new instance of WWW::LogicBoxes that can be used for API Requests.
 
 =head1 AUTHORS
 
@@ -292,11 +347,12 @@ Robert Stone, C<< <drzigman AT cpan DOT org > >>
 
 =head1 ACKNOWLEDGMENTS
 
-Thanks to Richard Simoes for his assistance in putting this module together and for writing the WWW::eNom module that much of this is based on.  Also thanks to HostGator.com for funding the development of this module and providing test resources.
+Thanks to L<HostGator|http://hostgator.com> and L<BrainStorm Incubator|http://brainstormincubator.com> for funding the development of this module and providing test resources.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2012 Robert Stone
+Copyright 2016 Robert Stone
+
 This program is free software; you can redistribute it and/or modify it under the terms of either: the GNU Lesser General Public License as published by the Free Software Foundation; or any compatible license.
 
 See http://dev.perl.org/licenses/ for more information.

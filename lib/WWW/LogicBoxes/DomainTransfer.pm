@@ -1,4 +1,4 @@
-package WWW::LogicBoxes::Domain;
+package WWW::LogicBoxes::DomainTransfer;
 
 use strict;
 use warnings;
@@ -14,7 +14,7 @@ use WWW::LogicBoxes::PrivateNameServer;
 use DateTime;
 
 # VERSION
-# ABSTRACT: LogicBoxes Domain Representation
+# ABSTRACT: LogicBoxes Domain Transfer In Progress Representation
 
 has id => (
     is       => 'ro',
@@ -40,33 +40,15 @@ has status => (
     required => 1,
 );
 
+has transfer_status => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
 has verification_status => (
     is       => 'ro',
     isa      => VerificationStatus,
-    required => 1,
-);
-
-has is_locked => (
-    is       => 'ro',
-    isa      => Bool,
-    required => 1,
-);
-
-has is_private => (
-    is       => 'ro',
-    isa      => Bool,
-    required => 1,
-);
-
-has created_date => (
-    is       => 'ro',
-    isa      => DateTime,
-    required => 1,
-);
-
-has expiration_date => (
-    is       => 'ro',
-    isa      => DateTime,
     required => 1,
 );
 
@@ -101,9 +83,10 @@ has billing_contact_id => (
 );
 
 has epp_key => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
+    is        => 'ro',
+    isa       => Str,
+    required  => 0,
+    predicate => 'has_epp_key',
 );
 
 has private_nameservers => (
@@ -135,17 +118,14 @@ sub construct_from_response {
         name                  => $response->{domainname},
         customer_id           => $response->{customerid},
         status                => $response->{currentstatus},
+        transfer_status       => $response->{actionstatusdesc},
         verification_status   => $response->{raaVerificationStatus},
-        is_locked             => !!( grep { $_ eq 'transferlock' } @{ $response->{orderstatus} } ),
-        is_private            => $response->{isprivacyprotected} eq 'true',
-        created_date          => DateTime->from_epoch( epoch => $response->{creationtime}, time_zone => 'UTC' ),
-        expiration_date       => DateTime->from_epoch( epoch => $response->{endtime}, time_zone => 'UTC' ),
         ns                    => [ map { $response->{ $_ } } sort ( grep { $_ =~ m/^ns/ } keys $response ) ],
         registrant_contact_id => $response->{registrantcontactid},
         admin_contact_id      => $response->{admincontactid},
         technical_contact_id  => $response->{techcontactid},
         billing_contact_id    => $response->{billingcontactid},
-        epp_key               => $response->{domsecret},
+        $response->{domsecret} ? ( epp_key => $response->{domsecret} ) : ( ),
         scalar @private_nameservers ? ( private_nameservers => \@private_nameservers ) : ( ),
     );
 }
@@ -158,7 +138,7 @@ __END__
 
 =head1 NAME
 
-WWW::LogicBoxes::Domain - Representation of Registered LogicBoxes Domain
+WWW::LogicBoxes::DomainTransfer - Representation of a Domain Transfer In Progress
 
 =head1 SYNOPSIS
 
@@ -166,13 +146,13 @@ WWW::LogicBoxes::Domain - Representation of Registered LogicBoxes Domain
 
     my $logic_boxes = WWW::LogicBoxes->new( ... );
 
-    my $domain = $logic_boxes->get_domain_by_name( 'test-domain.com' );
+    my $domain_transfer = $logic_boxes->get_domain_by_name( 'in-progress-transfer.com' );
 
-    print 'ID For domain test-domain.com is ' . $domain->id . "\n";
+    print 'Status of Domain Transfer is ' . $domain_transfer->transfer_status . "\n";
 
 =head1 DESCRIPTION
 
-Represents L<LogicBoxes|http://www.logicboxes.com> domains, containing all related information.  For most operations this will be the base object that is used to represent the data.
+Represents L<LogicBoxes|http://www.logicboxes.com> domains transfers that are in progress.
 
 =head1 ATTRIBUTES
 
@@ -208,6 +188,18 @@ Current status of the domain with L<LogicBoxes|http://www.logicboxes.com>.  Will
 
 =back
 
+=head2 B<transfer_status>
+
+A human readable string indicating what part of the transfer flow we are currently in.  A non exahustive list of possible values incldue:
+
+=over 4
+
+=item Transfer waiting for Losing Registrar Approval
+
+=item Transfer waiting for Admin Contact Approval
+
+=back
+
 =head2 B<verification_status>
 
 According to ICANN rules, all new gTLD domains that were registered after January 1st, 2014 must be verified.  verification_status describes the current state of this verification and will be one of the following values:
@@ -223,22 +215,6 @@ According to ICANN rules, all new gTLD domains that were registered after Januar
 =back
 
 For details on the ICANN policy please see the riveting ICANN Registrar Agreement L<https://www.icann.org/resources/pages/approved-with-specs-2013-09-17-en>.
-
-=head2 B<is_locked>
-
-Boolean indicating if the domain is currently locked, preventing transfer.
-
-=head2 B<is_private>
-
-Boolean indicating if this domain uses WHOIS Privacy.
-
-=head2 B<created_date>
-
-Date this domain registration was created.
-
-=head2 B<expiration_date>
-
-Date this domain registration expires.
 
 =head2 B<ns>
 
@@ -262,7 +238,7 @@ A L<Contact|WWW::LogicBoxes::Contact> id for the Billing.
 
 =head2 B<epp_key>
 
-The secret key needed in order to transfer a domain to another registrar.
+The secret key needed in order to transfer a domain to another registrar, if it has been provided.  Predicate of has_epp_key.
 
 =head2 private_nameserves
 
@@ -284,7 +260,7 @@ These methods are used internally, it's fairly unlikely that consumers will ever
         },
     });
 
-    my $domain = WWW::LogicBoxes::Domain->construct_from_response( $response );
+    my $domain = WWW::LogicBoxes::DomainTransfer->construct_from_response( $response );
 
 Constructs an instance of $self from a L<LogicBoxes|http://www.logicboxes.com> response.
 
