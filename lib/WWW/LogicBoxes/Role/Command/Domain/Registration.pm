@@ -51,6 +51,8 @@ sub delete_domain_registration_by_id {
         if( $_ =~ m/No Entity found for Entityid/ ) {
             croak 'No such domain to delete';
         }
+
+        croak $_;
     };
 }
 

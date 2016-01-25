@@ -28,12 +28,26 @@ subtest 'Delete Valid Domain Registration' => sub {
         $logic_boxes->delete_domain_registration_by_id( $domain->id );
     } 'Lives through domain registration deletion';
 
-    my $retrieved_domain;
-    lives_ok {
-        $logic_boxes->get_domain_by_id( $domain->id );
-    } 'Lives through retrieving domain by id';
+    subtest 'Retrieve Domain Right Away' => sub {
+        my $retrieved_domain;
+        lives_ok {
+            $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+        } 'Lives through retrieving domain by id';
 
-    ok( !defined $retrieved_domain, 'Domain no longer exists' );
+        isa_ok( $retrieved_domain, 'WWW::LogicBoxes::Domain' );
+    };
+
+    sleep 10;
+    note( 'Waiting for LogicBoxes to delete domain' );
+
+    subtest 'Retrieve Deleted Domain' => sub {
+        my $retrieved_domain;
+        lives_ok {
+            $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+        } 'Lives through retrieving domain by id';
+
+        cmp_ok( $retrieved_domain->status, 'eq', 'Deleted', 'Correct Status' );
+    };
 };
 
 done_testing;

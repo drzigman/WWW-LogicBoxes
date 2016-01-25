@@ -183,6 +183,8 @@ sub install_methods {
                             params     => $args,
                         );
 
+                        ### Method Name: ( $method_name )
+                        ### HTTP Method: ( $http_method )
                         ### URI: ( $uri )
 
                         my $response = $ua->request( $http_method, $uri );

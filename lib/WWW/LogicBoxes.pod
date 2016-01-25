@@ -84,11 +84,29 @@ Used for checking to see if a domain is available for registration as well as ge
 
 =head2 L<Domain Registration|WWW::LogicBoxes::Role::Command::Domain::Registration>
 
+New Domain Registration.
+
 =over 4
 
 =item L<register_domain|WWW::LogicBoxes::Role::Command::Domain::Registration/register_domain>
 
 =item L<delete_domain_registration_by_id|WWW::LogicBoxes::Role::Command::Domain::Registration/delete_domain_registration_by_id>
+
+=back
+
+=head2 L<Domain Transfer|WWW::LogicBoxes::Role::Command::Domain::Transfer>
+
+New Domain Transfers.
+
+=over 4
+
+=item L<is_domain_transferable|WWW::LogicBoxes::Role::Command::Domain::Transfer/is_domain_transferable>
+
+=item L<transfer_domain|WWW::LogicBoxes::Role::Command::Domain::Transfer/transfer_domain>
+
+=item L<delete_domain_transfer_by_id|WWW::LogicBoxes::Role::Command::Domain::Transfer/delete_domain_transfer_by_id>
+
+=item L<resend_transfer_approval_mail_by_id|WWW::LogicBoxes::Role::Command::Domain::Transfer/resend_transfer_approval_mail_by_id>
 
 =back
 
@@ -154,6 +172,10 @@ A LogicBoxes customer under the reseller account.
 
 A registered domain and all of it's related information.
 
+=head2 L<WWW::LogicBoxes::DomainTransfer>
+
+A pending domain transfer and all of it's related information.
+
 =head2 L<WWW::LogicBoxes::DomainAvailability>
 
 A response to a domain availability request.  Contains the status of the domain and if it is available for registration.
@@ -161,6 +183,10 @@ A response to a domain availability request.  Contains the status of the domain 
 =head2 L<WWW::LogicBoxes::DomainRequest::Registration>
 
 Request to register a domain.
+
+=head2 L<WWW::LogicBoxes::DomainRequest::Transfer>
+
+Request to transfer a domain.
 
 =head2 L<WWW::LogicBoxes::PrivateNameServer>
 

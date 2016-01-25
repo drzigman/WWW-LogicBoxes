@@ -83,7 +83,9 @@ Implements domain related operations with the L<LogicBoxes's|http://www.logicbox
     my $logic_boxes = WWW::LogicBoxes->new( ... );
     my $domain      = $logic_boxes->get_domain_by_id( 42 );
 
-Given a Integer L<domain|WWW::LogicBoxes::Domain> id, returns a matching L<WWW::LogicBoxes::Domain> from L<LogicBoxes|http://www.logicobxes.com>.  In the event of no matching L<domain|WWW::LogicBoxes::Domain>, returns undef,
+Given a Integer L<domain|WWW::LogicBoxes::Domain> id, returns a matching L<WWW::LogicBoxes::Domain> from L<LogicBoxes|http://www.logicobxes.com>.  In the event of no matching L<domain|WWW::LogicBoxes::Domain>, returns undef.
+
+B<NOTE> For domain transfers that are in progress a L<domain_transfer|WWW::LogicBoxes::DomainTransfer> record will be returned.
 
 =head2 get_domain_by_name
 
@@ -94,6 +96,8 @@ Given a Integer L<domain|WWW::LogicBoxes::Domain> id, returns a matching L<WWW::
     my $domain      = $logic_boxes->get_domain_by_domain( 'test-domain.com' );
 
 Given a full L<domain|WWW::LogicBoxes::Domain> name, returns a matching L<WWW::LogicBoxes::Domain> from L<LogicBoxes|http://www.logicobxes.com>.  In the event of no matching L<domain|WWW::LogicBoxes::Domain>, returns undef,
+
+B<NOTE> For domain transfers that are in progress a L<domain_transfer|WWW::LogicBoxes::DomainTransfer> record will be returned.
 
 =head2 update_domain_contacts
 

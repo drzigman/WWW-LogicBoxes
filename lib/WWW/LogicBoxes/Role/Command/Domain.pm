@@ -8,7 +8,7 @@ use MooseX::Params::Validate;
 
 use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int PrivateNameServer Str );
 
-use WWW::LogicBoxes::Domain;
+use WWW::LogicBoxes::Domain::Factory;
 
 use Try::Tiny;
 use Carp;
@@ -34,7 +34,7 @@ sub get_domain_by_id {
             }
         });
 
-        return WWW::LogicBoxes::Domain->construct_from_response( $response );
+        return WWW::LogicBoxes::Domain::Factory->construct_from_response( $response );
     }
     catch {
         if( $_ =~ m/^No Entity found for Entityid/ ) {
@@ -58,7 +58,7 @@ sub get_domain_by_name {
             }
         });
 
-        return WWW::LogicBoxes::Domain->construct_from_response( $response );
+        return WWW::LogicBoxes::Domain::Factory->construct_from_response( $response );
     }
     catch {
         if( $_ =~ m/^Website doesn't exist for/ ) {

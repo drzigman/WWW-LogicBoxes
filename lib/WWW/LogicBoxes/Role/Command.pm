@@ -1,5 +1,8 @@
 package WWW::LogicBoxes::Role::Command;
 
+use strict;
+use warnings;
+
 use Moose::Role;
 use MooseX::Params::Validate;
 
@@ -17,7 +20,8 @@ with 'WWW::LogicBoxes::Role::Command::Raw',
      'WWW::LogicBoxes::Role::Command::Domain',
      'WWW::LogicBoxes::Role::Command::Domain::Availability',
      'WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer',
-     'WWW::LogicBoxes::Role::Command::Domain::Registration';
+     'WWW::LogicBoxes::Role::Command::Domain::Registration',
+     'WWW::LogicBoxes::Role::Command::Domain::Transfer';
 
 # VERSION
 # ABSTRACT: Submission of LogicBoxes Commands
@@ -66,6 +70,13 @@ sub submit {
         if($raw_json =~ /^\d+$/) {
             # When just an id is returned, JSON is not used
             $response = { id => $raw_json };
+        }
+        elsif( $raw_json =~ m/^(?:true|false)$/i ) {
+            # When just a true/false is returned, JSON is not used
+            $response = { result => $raw_json };
+        }
+        elsif( $raw_json =~ m/^Success/i ) {
+            $response = { result => $raw_json };
         }
         else {
             $response = decode_json( $raw_json );
