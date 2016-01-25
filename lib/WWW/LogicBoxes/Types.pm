@@ -144,3 +144,5 @@ subtype URI, as Str,
     message { "$_ is not a valid URI" };
 
 1;
+
+__END__

@@ -33,3 +33,5 @@ sub construct_from_response {
 }
 
 1;
+
+__END__

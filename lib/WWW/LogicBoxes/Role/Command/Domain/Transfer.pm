@@ -124,3 +124,112 @@ sub resend_transfer_approval_mail_by_id {
 }
 
 1;
+
+__END__
+=pod
+
+=head1 NAME
+
+WWW::LogicBoxes::Role::Command::Domain::Transfer - Domain Transfer Related Operations
+
+=head1 SYNOPSIS
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::DomainTransfer;
+    use WWW::LogicBoxes::DomainRequest::Transfer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    # Check Transferability
+    if( $logic_boxes->is_domain_transferable( 'some-domain.com' ) ) {
+        print "Domain is transferable';
+    }
+    else {
+        print "Domain is not transferable";
+    }
+
+    # Transfer Domain
+    my $transfer_request = WWW::LogicBoxes::DomainRequest::Transfer->new( ... );
+    my $domain_transfer  = $logic_boxes->transfer_domain( $transfer_request );
+
+    # Deletion
+    $logic_boxes->delete_domain_transfer_by_id( $domain_transfer->id );
+
+    # Resend Transfer Approval Mail
+    $logic_boxes->resend_transfer_approval_mail_by_id( $domain_transfer->id );
+
+=head1 REQUIRES
+
+=over 4
+
+=item submit
+
+=item get_domain_by_id
+
+=back
+
+=head1 DESCRIPTION
+
+Implemented domain transfer related operations with the L<LogicBoxes'|http://www.logicobxes.com> API.
+
+=head1 METHODS
+
+=head2 is_domain_transferable
+
+    use WWW::LogicBoxes;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    if( $logic_boxes->is_domain_transferable( 'some-domain.com' ) ) {
+        print "Domain is transferable';
+    }
+    else {
+        print "Domain is not transferable";
+    }
+
+Given a domain name, uses L<LogicBoxes|http://www.logicboxes.com> to determine if this domain is transferable in it's current state.
+
+B<NOTE> L<LogicBoxes|http://www.logicboxes.com> will accept transfer requests even if the domain is not actually eligble for transfer so you should call this method before making a domain transfer request.
+
+=head2 transfer_domain
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::DomainTransfer;
+    use WWW::LogicBoxes::DomainRequest::Transfer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    my $transfer_request = WWW::LogicBoxes::DomainRequest::Transfer->new( ... );
+    my $domain_transfer  = $logic_boxes->transfer_domain( $transfer_request );
+
+Given a L<WWW::LogicBoxes::DomainRequest::Transfer> or a HashRef that can be coerced into a L<WWW::LogicBoxes::DomainRequest::Transfer>, attempt to transfer the domain with L<LogicBoxes|http://www.logicboxes.com>.
+
+Returns a fully formed L<WWW::LogicBoxes::DomainTransfer>.
+
+=head2 delete_domain_transfer_by_id
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::DomainTransfer;
+    use WWW::LogicBoxes::DomainRequest::Transfer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    my $domain_transfer = $logic_boxes->get_domain_by_id( ... );
+    $logic_boxes->delete_domain_transfer_by_id( $domain_transfer->id );
+
+Given an Integer representing an in progress L<transfer|WWW::LogicBoxes::DomainTransfer>, deletes the specfied domain transfer.  There is a limited amount of time in which you can do this for a new transfer, and you can only do it before the transfer is completed.  If you do this too often then L<LogicBoxes|http://www.logicboxes.com> will get grumpy with you.
+
+=head2 resend_transfer_approval_mail_by_id
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::DomainTransfer;
+    use WWW::LogicBoxes::DomainRequest::Transfer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    my $domain_transfer = $logic_boxes->get_domain_by_id( ... );
+    $logic_boxes->resend_transfer_approval_mail_by_id( $domain_transfer->id );
+
+Given an Integer representing an in progress L<transfer|WWW::LogicBoxes::DomainTransfer> that has not yet been approved by the L<admin contact|WWW::LogicBoxes::Contact> as specified by the losing registrar, will resend the transfer approval email.  If this method is used on a completed transfer, a registration, or a domain that has already been approved this method will croak with an error.
+
+=cut

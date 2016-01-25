@@ -182,3 +182,130 @@ sub construct_from_response {
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__
+=pod
+
+=head1 NAME
+
+WWW::LogicBoxes::Contact - Representation of Domain Contact
+
+=head1 SYNOPSIS
+
+    use strict;
+    use warnings;
+
+    use WWW::LogicBoxes::Customer;
+    use WWW::LogicBoxes::Contact;
+
+    my $customer = WWW::LogicBoxes::Customer->new( ... ); # Valid LogicBoxes Customer
+
+    my $contact = WWW::LogicBoxes::Contact->new(
+        id           => 42,
+        name         => 'Edsger Dijkstra',
+        company      => 'University of Texas at Austin',
+        email        => 'depth.first@search.com',
+        address1     => 'University of Texas',
+        address2     => '42 Main St',
+        city         => 'Austin',
+        state        => 'Texas',
+        country      => 'US',
+        zipcode      => '78713',
+        phone_number => '18005551212',
+        fax_number   => '18005551212',
+        type         => 'Contact',
+        customer_id  => $customer->id,
+    );
+
+=head1 DESCRIPTION
+
+Representation of a L<LogicBoxes|http://www.logicboxes.com> domain contact.
+
+=head1 ATTRIBUTES
+
+=head2 id
+
+Contacts that have actually been created will have an id assigned for them.  A predicate exists 'has_id' that can be used to check to see if an id has been assigned to this contact.  A private writer of _set_id is also provided.
+
+=head2 B<name>
+
+=head2 B<company>
+
+Company of the contact.  This is a required field so if there is no company some sentinal string of "None" or something similiar should be used.
+
+=head2 B<email>
+
+=head2 B<address1>
+
+=head2 address2
+
+Predicate of has_address2.
+
+=head2 address3
+
+Predicate of has_address3.
+
+=head2 B<city>
+
+=head2 state
+
+This is the full name of the state, so Texas rather than TX should be used.  Not all regions in the world have states so this is not a required field, a predicate of has_state exists.
+
+=head2 B<country>
+
+The ISO-3166 code for the country.  For more information on ISO-3166 please see L<Wikipedia|https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2>.
+
+=head2 B<zipcode>
+
+=head2 B<phone_number>
+
+Be sure to include the country code.  When it comes to the phone number a string or L<Number::Phone> object can be provided and it will be coerced into the L<WWW::LogicBoxes::PhoneNumber> internal representation used.
+
+=head2 fax_number
+
+Predicate of has_fax_number
+
+=head2 type
+
+The type of contact, B<NOT TO BE CONFUSED> with what this contact is being used for on a domain.  This B<IS NOT> Registrant, Billing, Admin, or Technical.  The default value is 'Contact' and you almost never want to change this.
+
+=head2 B<customer_id>
+
+The id of the customer that this contact is assoicated with.
+
+=head1 METHODS
+
+These methods are used internally, it's fairly unlikely that consumers will ever call them directly.
+
+=head2 construct_creation_request
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $contact     = WWW::LogicBoxes::Contact->new( ... );
+
+    my $response = $logic_boxes->submit({
+        method => 'contacts__add',
+        params => $contact->construct_creation_request(),
+    });
+
+Converts $self into a HashRef suitable for creation of a contact with L<LogicBoxes|http://www.logicboxes.com>
+
+=head2 construct_from_response
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    my $response = $logic_boxes->submit({
+        method => 'contacts__details',
+        params => {
+            'contact-id' => 42,
+        }
+    });
+
+    my $contact = WWW::LogicBoxes::Contact->construct_from_response( $response );
+
+Creates an instance of $self from a L<LogicBoxes|http://www.logicboxes.com> response.
+
+=head1 SEE ALSO
+
+For .us domains L<WWW::LogicBoxes::Contact::US> must be used for at least the registrant contact.
+
+=cut
