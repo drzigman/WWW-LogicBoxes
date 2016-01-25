@@ -1,3 +1,6 @@
+v1.0.1    2016-01-25
+  - Minor Fixes for Dzil Release Process
+
 1.0.0     2016-01-25
   - First Stable Release
   - Large Refactor but preserving backwards compatability

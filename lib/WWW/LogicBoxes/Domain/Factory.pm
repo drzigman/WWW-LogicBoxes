@@ -8,6 +8,9 @@ use WWW::LogicBoxes::DomainTransfer;
 
 use Carp;
 
+# VERSION
+# ABSTRACT: Domain Factory for Building Domain Objects from Responses
+
 sub construct_from_response {
     my $self = shift;
     my $response = shift;

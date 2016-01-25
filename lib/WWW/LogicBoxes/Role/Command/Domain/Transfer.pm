@@ -112,12 +112,14 @@ sub resend_transfer_approval_mail_by_id {
         croak $response;
     }
     catch {
+        ## no critic ( RegularExpressions::ProhibitComplexRegexes )
         if( $_ =~ m/You are not allowed to perform this action/ ) {
             croak 'No matching pending transfer order found';
         }
         elsif( $_ =~ m/The current status of Transfer action for the domain name does not allow this operation/ ) {
             croak 'Domain is not pending admin approval';
         }
+        ## use critic
 
         croak $_;
     };

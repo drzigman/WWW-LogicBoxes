@@ -44,17 +44,21 @@ has public_suffix => (
     init_arg => undef,
 );
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _build_sld {
     my $self = shift;
 
     return substr( $self->name, 0, length( $self->name ) - ( length( $self->public_suffix ) + 1 ) );
 }
+## use critic
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _build_public_suffix {
     my $self = shift;
 
     return Mozilla::PublicSuffix::public_suffix( $self->name );
 }
+## use critic
 
 __PACKAGE__->meta->make_immutable;
 
@@ -72,7 +76,7 @@ WWW::LogicBoxes::DomainAvailability
     use WWW::LogicBoxes;
 
     my $logic_boxes = WWW::LogicBoxes->new( ... );
-    
+
     my $domain_availabilities = $logic_boxes->check_domain_availability(
         slds => [qw( cpan drzigman brainstormincubator ],
         tlds => [qw( com net org )],

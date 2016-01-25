@@ -82,7 +82,7 @@ sub get_customer_by_id {
                 'customer-id' => $customer_id,
             }
         });
-    
+
         return WWW::LogicBoxes::Customer->construct_from_response( $response );
     }
     catch {

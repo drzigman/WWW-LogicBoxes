@@ -81,11 +81,13 @@ around BUILDARGS => sub {
     return $class->$orig($args);
 };
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _build_base_uri {
     my $self = shift;
 
     return $self->sandbox ? $TEST_BASE_URI : $LIVE_BASE_URI;
 }
+## use critic
 
 1;
 
@@ -236,7 +238,7 @@ I<Private> nameservers are those that are based on the registered domain.  For e
 
 =item L<delete_private_nameserver_ip|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/delete_private_nameserver_ip>
 
-=item L<delete_private_nameserver|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/deelte_private_nameserver>
+=item L<delete_private_nameserver|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer/delete_private_nameserver>
 
 =back
 

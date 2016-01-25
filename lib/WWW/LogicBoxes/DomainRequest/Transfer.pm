@@ -11,6 +11,9 @@ use WWW::LogicBoxes::Types qw( Str );
 
 extends 'WWW::LogicBoxes::DomainRequest';
 
+# VERSION
+# ABSTRACT: Domain Transfer Request
+
 has epp_key => (
     is        => 'ro',
     isa       => Str,

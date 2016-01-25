@@ -23,7 +23,7 @@ sub create_private_nameserver {
     my ( $nameserver ) = pos_validated_list( \@_, { isa => PrivateNameServer, coerce => 1 } );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__add_cns',
             params => {
                 'order-id' => $nameserver->domain_id,
@@ -56,7 +56,7 @@ sub rename_private_nameserver {
     );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__modify_cns_name',
             params => {
                 'order-id' => $args{domain_id},
@@ -68,6 +68,7 @@ sub rename_private_nameserver {
         return $self->get_domain_by_id( $args{domain_id} );
     }
     catch {
+        ## no critic (ControlStructures::ProhibitCascadingIfElse RegularExpressions::ProhibitComplexRegexes)
         if( $_ =~ m/^No Entity found for Entityid/ ) {
             croak 'No such domain';
         }
@@ -84,6 +85,7 @@ sub rename_private_nameserver {
         elsif( $_ =~ m/^\{hostname=Child NameServer already exists\}/ ) {
             croak 'A nameserver with that name already exists';
         }
+        ## use critic
 
         croak $_;
     };
@@ -100,7 +102,7 @@ sub modify_private_nameserver_ip {
     );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__modify_cns_ip',
             params => {
                 'order-id' => $args{domain_id},
@@ -113,6 +115,7 @@ sub modify_private_nameserver_ip {
         return $self->get_domain_by_id( $args{domain_id} );
     }
     catch {
+        ## no critic (ControlStructures::ProhibitCascadingIfElse RegularExpressions::ProhibitComplexRegexes)
         if( $_ =~ m/^No Entity found for Entityid/ ) {
             croak 'No such domain';
         }
@@ -125,6 +128,7 @@ sub modify_private_nameserver_ip {
         elsif( $_ =~ m/^Invalid Old IpAddress. Its not attached to Nameserver/ ) {
             croak 'Nameserver does not have specified ip';
         }
+        ## use critic
 
         croak $_;
     };
@@ -140,7 +144,7 @@ sub delete_private_nameserver_ip {
     );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__delete_cns_ip',
             params => {
                 'order-id' => $args{domain_id},
@@ -152,6 +156,7 @@ sub delete_private_nameserver_ip {
         return $self->get_domain_by_id( $args{domain_id} );
     }
     catch {
+        ## no critic (ControlStructures::ProhibitCascadingIfElse RegularExpressions::ProhibitComplexRegexes)
         if( $_ =~ m/^No Entity found for Entityid/ ) {
             croak 'No such domain';
         }
@@ -161,6 +166,7 @@ sub delete_private_nameserver_ip {
         elsif( $_ =~ m/^\{ipaddress1=Invalid IpAddress .* Its not attached to Nameserver\}/ ) {
             croak 'IP address not assigned to private nameserver';
         }
+        ## use critic
 
         croak $_;
     };
@@ -238,7 +244,7 @@ WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer - Private Nameserver R
         name      => 'ns1.' . $domain->name,
         ip        => '4.2.2.1',
     );
-    
+
     # Delete Private Nameserver
     my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new( ... );
     $logic_boxes->delete_private_nameserver( $private_nameserver )

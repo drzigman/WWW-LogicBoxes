@@ -186,7 +186,7 @@ The full domain name ( test-domain.com ).
 
 =head2 B<customer_id>
 
-The id of the L<customer|WWW::LogicBoes::Customer> who owns this domain in L<LogicBoxes|http://www.logicboxes.com>.
+The id of the L<customer|WWW::LogicBoxes::Customer> who owns this domain in L<LogicBoxes|http://www.logicboxes.com>.
 
 =head2 B<status>
 
