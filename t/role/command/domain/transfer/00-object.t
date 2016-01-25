@@ -18,6 +18,9 @@ subtest "$ROLE is a well formed roll" => sub {
 
 subtest "$ROLE has the correct methods" => sub {
     has_method_ok( $ROLE, 'is_domain_transferable' );
+    has_method_ok( $ROLE, 'transfer_domain' );
+    has_method_ok( $ROLE, 'delete_domain_transfer_by_id' );
+    has_method_ok( $ROLE, 'resend_transfer_approval_mail_by_id' );
 };
 
 done_testing;

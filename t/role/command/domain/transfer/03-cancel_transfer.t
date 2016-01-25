@@ -6,7 +6,6 @@ use warnings;
 use Test::More;
 use Test::Exception;
 use Test::MockModule;
-use String::Random qw( random_string );
 
 use FindBin;
 use lib "$FindBin::Bin/../../../../lib";

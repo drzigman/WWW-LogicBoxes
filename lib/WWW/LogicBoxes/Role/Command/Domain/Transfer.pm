@@ -93,4 +93,34 @@ sub delete_domain_transfer_by_id {
     };
 }
 
+sub resend_transfer_approval_mail_by_id {
+    my $self = shift;
+    my ( $domain_id ) = pos_validated_list( \@_, { isa => Int } );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__resend_rfa',
+            params => {
+                'order-id' => $domain_id,
+            }
+        });
+
+        if( lc $response->{result} eq 'true' ) {
+            return;
+        }
+
+        croak $response;
+    }
+    catch {
+        if( $_ =~ m/You are not allowed to perform this action/ ) {
+            croak 'No matching pending transfer order found';
+        }
+        elsif( $_ =~ m/The current status of Transfer action for the domain name does not allow this operation/ ) {
+            croak 'Domain is not pending admin approval';
+        }
+
+        croak $_;
+    };
+}
+
 1;
