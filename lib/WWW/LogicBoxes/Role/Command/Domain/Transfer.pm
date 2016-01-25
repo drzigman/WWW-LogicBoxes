@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( DomainName DomainTransfer );
+use WWW::LogicBoxes::Types qw( DomainName DomainTransfer Int );
 
 use Try::Tiny;
 use Carp;
@@ -61,6 +61,36 @@ sub transfer_domain {
     }
 
     return $self->get_domain_by_id( $response->{entityid} );
+}
+
+sub delete_domain_transfer_by_id {
+    my $self = shift;
+    my ( $domain_id ) = pos_validated_list( \@_, { isa => Int } );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__cancel_transfer',
+            params => {
+                'order-id' => $domain_id,
+            }
+        });
+
+        if( lc $response->{result} eq 'success' ) {
+            return;
+        }
+
+        croak $response;
+    }
+    catch {
+        if( $_ =~ m/You are not allowed to perform this action/ ) {
+            croak 'No matching order found';
+        }
+        elsif( $_ =~ m|Invalid action status/action type for this operation| ) {
+            croak 'Unable to delete';
+        }
+
+        croak $_;
+    };
 }
 
 1;

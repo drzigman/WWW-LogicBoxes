@@ -71,8 +71,11 @@ sub submit {
             # When just an id is returned, JSON is not used
             $response = { id => $raw_json };
         }
-        elsif( $raw_json =~ /^(?:true|false)$/ ) {
+        elsif( $raw_json =~ m/^(?:true|false)$/i ) {
             # When just a true/false is returned, JSON is not used
+            $response = { result => $raw_json };
+        }
+        elsif( $raw_json =~ m/^Success/i ) {
             $response = { result => $raw_json };
         }
         else {
