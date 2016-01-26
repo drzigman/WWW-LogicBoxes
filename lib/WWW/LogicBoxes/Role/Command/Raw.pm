@@ -154,6 +154,8 @@ sub BUILD {
     my $self = shift;
 
     $self->install_methods();
+
+    return;
 }
 
 sub install_methods {
@@ -199,6 +201,8 @@ sub install_methods {
             }
         }
     }
+
+    return;
 }
 
 sub _make_query_string {

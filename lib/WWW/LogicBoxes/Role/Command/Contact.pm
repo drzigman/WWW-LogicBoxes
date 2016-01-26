@@ -33,7 +33,7 @@ sub create_contact {
         method => 'contacts__add',
         params => $args{contact}->construct_creation_request(),
     });
-   
+
     $args{contact}->_set_id($response->{id});
 
     return $args{contact};
@@ -77,7 +77,7 @@ sub delete_contact_by_id {
     my ( $id ) = pos_validated_list( \@_, { isa => Int } );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'contacts__delete',
             params => {
                 'contact-id' => $id,

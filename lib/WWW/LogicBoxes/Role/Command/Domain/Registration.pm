@@ -38,7 +38,7 @@ sub delete_domain_registration_by_id {
     my ( $domain_id ) = pos_validated_list( \@_, { isa => Int } );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__delete',
             params => {
                 'order-id' => $domain_id,

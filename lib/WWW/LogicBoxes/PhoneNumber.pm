@@ -59,12 +59,15 @@ around BUILDARGS => sub {
     }
 };
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _build_country_code {
     my $self = shift;
 
     return $self->_number_phone_obj->country_code;
 }
+## use critic
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _build_number {
     my $self = shift;
 
@@ -73,12 +76,15 @@ sub _build_number {
 
     return substr( $full_number, length( $self->country_code ) );
 }
+## use critic
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _to_string {
     my $self = shift;
 
     return $self->country_code . $self->number;
 }
+## use critic
 
 __PACKAGE__->meta->make_immutable;
 

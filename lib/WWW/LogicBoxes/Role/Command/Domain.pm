@@ -110,7 +110,7 @@ sub update_domain_contacts {
             return $original_domain;
         }
 
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__modify_contact',
             params => {
                 'order-id'    => $args{id},
@@ -121,6 +121,7 @@ sub update_domain_contacts {
         return $self->get_domain_by_id( $args{id} );
     }
     catch {
+        ## no critic (ControlStructures::ProhibitCascadingIfElse)
         if( $_ =~ m/{registrantcontactid=registrantcontactid is invalid}/ ) {
             croak 'Invalid registrant_contact_id specified';
         }
@@ -133,6 +134,7 @@ sub update_domain_contacts {
         elsif( $_ =~ m/{billingcontactid=billingcontactid is invalid}/ ) {
             croak 'Invalid billing_contact_id specified';
         }
+        ## use critic
 
         croak $_;
     };
@@ -143,7 +145,7 @@ sub enable_domain_lock_by_id {
     my ( $domain_id ) = pos_validated_list( \@_, { isa => Int } );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__enable_theft_protection',
             params => {
                 'order-id' => $domain_id,
@@ -166,7 +168,7 @@ sub disable_domain_lock_by_id {
     my ( $domain_id ) = pos_validated_list( \@_, { isa => Int } );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__disable_theft_protection',
             params => {
                 'order-id' => $domain_id,
@@ -237,7 +239,7 @@ sub _set_domain_privacy {
     );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__modify_privacy_protection',
             params => {
                 'order-id'        => $args{id},
@@ -266,7 +268,7 @@ sub update_domain_nameservers {
     );
 
     return try {
-        my $response = $self->submit({
+        $self->submit({
             method => 'domains__modify_ns',
             params => {
                 'order-id' => $args{id},
@@ -342,7 +344,7 @@ WWW::LogicBoxes::Role::Command::Domain - Domain Related Operations
         id     => $domain->id,
         reason => 'Disabling Domain Privacy',
     );
-    
+
     # Nameservers
     $logic_boxes->update_domain_nameservers(
         id          => $domain->id,
