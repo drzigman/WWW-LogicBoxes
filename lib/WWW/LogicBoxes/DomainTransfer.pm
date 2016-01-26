@@ -105,7 +105,7 @@ sub construct_from_response {
     }
 
     my @private_nameservers;
-    for my $private_nameserver_name ( keys $response->{cns} ) {
+    for my $private_nameserver_name ( keys %{ $response->{cns} } ) {
         push @private_nameservers, WWW::LogicBoxes::PrivateNameServer->new(
             domain_id => $response->{orderid},
             name      => $private_nameserver_name,
@@ -120,7 +120,7 @@ sub construct_from_response {
         status                => $response->{currentstatus},
         transfer_status       => $response->{actionstatusdesc},
         verification_status   => $response->{raaVerificationStatus},
-        ns                    => [ map { $response->{ $_ } } sort ( grep { $_ =~ m/^ns/ } keys $response ) ],
+        ns                    => [ map { $response->{ $_ } } sort ( grep { $_ =~ m/^ns/ } keys %{ $response } ) ],
         registrant_contact_id => $response->{registrantcontactid},
         admin_contact_id      => $response->{admincontactid},
         technical_contact_id  => $response->{techcontactid},

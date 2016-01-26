@@ -89,7 +89,7 @@ subtest 'Suggest Domain Names' => sub {
         $json = decode_json( $response );
     } 'Lives through decoding json';
 
-    for my $sld ( keys $json ) {
+    for my $sld ( keys %{ $json } ) {
         for my $tld (qw( com net org )) {
             my $domain = sprintf('%s.%s', $sld, $tld );
             my $status = $json->{$sld}{$tld};
