@@ -48,7 +48,7 @@ subtest 'Transfer Unregistered Domain' => sub {
             is_private            => 0,
         );
     } 'Lives through creating request object';
-    
+
     throws_ok {
         $logic_boxes->transfer_domain( request => $request );
     } qr/It is available for registration as new domain/, 'Throws on transfering unregistered domain';

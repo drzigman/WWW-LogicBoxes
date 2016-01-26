@@ -8,7 +8,7 @@ use Test::Exception;
 use MooseX::Params::Validate;
 use String::Random qw( random_string );
 
-use Test::WWW::LogicBoxes qw( create_api ); 
+use Test::WWW::LogicBoxes qw( create_api );
 use Test::WWW::LogicBoxes::Customer qw( create_customer );
 use Test::WWW::LogicBoxes::Contact qw( create_contact );
 

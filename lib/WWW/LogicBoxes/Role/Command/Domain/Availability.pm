@@ -218,7 +218,7 @@ ArrayRef of Public Suffixes to return domains for.
 
 Default false, if true will include - hacks.
 
-=item related 
+=item related
 
 Default false, if true will include related domains.
 
