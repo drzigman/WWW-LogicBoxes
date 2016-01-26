@@ -96,7 +96,7 @@ sub update_domain_contacts {
 
         my $num_changes = 0;
         my $contacts_to_update;
-        for my $contact_type ( keys $contact_mapping ) {
+        for my $contact_type ( keys %{ $contact_mapping } ) {
             if( $args{$contact_type} && $args{$contact_type} != $original_domain->$contact_type ) {
                 $contacts_to_update->{ $contact_mapping->{ $contact_type } } = $args{ $contact_type };
                 $num_changes++;

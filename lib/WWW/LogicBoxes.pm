@@ -126,7 +126,7 @@ WWW::LogicBoxes - Interact with LogicBoxes Reseller API
 
 L<WWW::LogicBoxes> is a module for interacting with the L<LogicBoxes|http://www.logicboxes.com/> API.  LogicBoxes is a domain registrar and the API performs operations such as checking domain availability, purchasing domains, and managing them.
 
-This module is broken down into two primary components (documented below).  These are L<COMMANDS> which are used for making requests and L<OBJECTS> which are used to represent data.  Below these, documentation for the L<WWW::LogicBoxes> module is included.
+This module is broken down into two primary components (documented below).  These are L<WWW::LogicBoxes/COMMANDS> which are used for making requests and L<WWW::LogicBoxes/OBJECTS> which are used to represent data.  Below these, documentation for the L<WWW::LogicBoxes> module is included.
 
 =head1 COMMANDS
 

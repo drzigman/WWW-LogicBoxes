@@ -162,8 +162,8 @@ sub install_methods {
     my $self = shift;
 
     my $ua = HTTP::Tiny->new;
-    for my $api_class ( keys $self->api_methods ) {
-        for my $http_method ( keys $self->api_methods->{ $api_class } ) {
+    for my $api_class ( keys %{ $self->api_methods } ) {
+        for my $http_method ( keys %{ $self->api_methods->{ $api_class } } ) {
             for my $api_method (@{ $self->api_methods->{ $api_class }{ $http_method } }) {
                 my $method_name = $api_class . '__' . $api_method;
 
@@ -247,7 +247,7 @@ sub _construct_get_args {
     my ( $params ) = pos_validated_list( \@_, { isa => HashRef } );
 
     my $get_args;
-    for my $param_name ( keys $params ) {
+    for my $param_name ( keys %{ $params } ) {
         if( ref $params->{ $param_name } eq 'ARRAY' ) {
             for my $param_value (@{ $params->{ $param_name } }) {
                 $get_args .= sprintf('&%s=%s', uri_escape( $param_name ), uri_escape( $param_value ) );
