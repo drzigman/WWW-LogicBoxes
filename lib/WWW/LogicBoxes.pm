@@ -10,6 +10,7 @@ use namespace::autoclean;
 
 use WWW::LogicBoxes::Types qw( Bool ResponseType Str URI );
 
+use Data::Util qw( is_hash_ref );
 use Carp;
 
 # VERSION
@@ -64,11 +65,11 @@ with 'WWW::LogicBoxes::Role::Command';
 around BUILDARGS => sub {
     my $orig  = shift;
     my $class = shift;
-    my $args  = shift;
+    my %args = @_ == 1 && is_hash_ref( $_[0] ) ? %{ $_[0] } : @_;
 
     # Assign since api_key or apikey are both valid due to backwards compaitability
-    my $password = $args->{password};
-    my $api_key  = $args->{apikey} // $args->{api_key};
+    my $password = $args{password};
+    my $api_key  = $args{apikey} // $args{api_key};
 
     if( !$password && !$api_key ) {
         croak 'A password or api_key must be specified';
@@ -78,7 +79,7 @@ around BUILDARGS => sub {
         croak "You must specify a password or an api_key, not both";
     }
 
-    return $class->$orig($args);
+    return $class->$orig(%args);
 };
 
 ## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
