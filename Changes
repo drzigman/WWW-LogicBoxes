@@ -1,3 +1,7 @@
+v1.0.4    2016-02-15
+  - Added missing coercion to WWW::LogicBoxes::Role::Command::Contact's
+    create_contact
+
 v1.0.3    2016-02-03
   - Allow for { } or "naked" arguments to new
   - Add min version for Test::Moose::More
