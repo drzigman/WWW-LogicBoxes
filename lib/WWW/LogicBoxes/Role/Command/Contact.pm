@@ -22,7 +22,7 @@ sub create_contact {
     my $self   = shift;
     my (%args) = validated_hash(
         \@_,
-        contact => { isa => Contact },
+        contact => { isa => Contact, coerce => 1 },
     );
 
     if( $args{contact}->has_id ) {
