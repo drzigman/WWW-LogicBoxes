@@ -72,6 +72,37 @@ sub get_contact_by_id {
     };
 }
 
+sub update_contact {
+    my $self = shift;
+    my (%args) = validated_hash(
+        \@_,
+        contact => { isa => Contact, coerce => 1 },
+    );
+
+    if( !$args{contact}->has_id ) {
+        croak "Contact does not exist (it lacks an id)";
+    }
+
+    return try {
+        $self->submit({
+            method => 'contacts__modify',
+            params => {
+                'contact-id' => $args{contact}->id,
+                %{ $args{contact}->construct_creation_request() },
+            }
+        });
+
+        return $self->get_contact_by_id( $args{contact}->id );
+    }
+    catch {
+        if( $_ =~ m/^Invalid contact-id/ || $_ =~ m/^No Entity found/ ) {
+            croak 'Invalid Contact ID';
+        }
+
+        croak $_;
+    };
+}
+
 sub delete_contact_by_id {
     my $self = shift;
     my ( $id ) = pos_validated_list( \@_, { isa => Int } );
@@ -116,6 +147,15 @@ WWW::LogicBoxes::Role::Command::Contact - Contact Related Operations
     # Retrieval
     my $retrieved_contact = $logic_boxes->get_contact_by_id( $contact->id );
 
+    # Update
+    my $old_contact = $logic_boxes->get_contact_by_id( 42 );
+    my $contact  = WWW::LogicBoxes::Contact->new(
+        id => $old_contact->id,
+        ...
+    );
+
+    $logic_boxes->update_contact( contact => $contact );
+
     # Deletion
     $logic_boxes->delete_contact_by_id( $contact->id );
 
@@ -154,6 +194,24 @@ Given a L<WWW::LogicBoxes::Contact> or a HashRef that can be coerced into a L<WW
     my $contact     = $logic_boxes->get_contact_by_id( 42 );
 
 Given an Integer ID, will return an instance of L<WWW::LogicBoxes::Contact> (or one of it's subclass for specialized contacts).  Returns undef if there is no matching L<contact|WWW::LogicBoxes::Contact> with the specified id.
+
+=head2 update_contact
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Customer;
+    use WWW::LogicBoxes::Contact;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+
+    my $old_contact = $logic_boxes->get_contact_by_id( 42 );
+    my $contact  = WWW::LogicBoxes::Contact->new(
+        id => $old_contact->id,
+        ...
+    );
+
+    $logic_boxes->update_contact( contact => $contact );
+
+Given a L<WWW::LogicBoxes::Contact> or a HashRef that can be coerced into a L<WWW::LogicBoxes::Contact>, updates the contact with the specified id with L<LogicBoxes|http://www.logicboxes.com>.
 
 =head2 delete_contact_by_id
 
