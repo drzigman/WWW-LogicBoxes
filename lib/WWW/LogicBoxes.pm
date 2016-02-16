@@ -161,6 +161,8 @@ Contacts are used in whois information and are required for domain registration.
 
 =item L<get_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/get_contact_by_id>
 
+=item L<update_contact|WWW::LogicBoxes::Role::Command::Contact/update_contact>
+
 =item L<delete_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/delete_contact_by_id>
 
 =back

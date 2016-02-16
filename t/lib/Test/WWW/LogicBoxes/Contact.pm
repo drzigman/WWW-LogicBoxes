@@ -31,8 +31,8 @@ sub create_contact {
         state        => { isa => Str,          optional => 1 },
         country      => { isa => Str,          optional => 1 },
         zipcode      => { isa => Str,          optional => 1 },
-        phone_number => { isa => PhoneNumber,  optional => 1 },
-        fax_number   => { isa => PhoneNumber,  optional => 1 },
+        phone_number => { isa => PhoneNumber,  optional => 1, coerce => 1 },
+        fax_number   => { isa => PhoneNumber,  optional => 1, coerce => 1 },
         customer_id  => { isa => Int,          optional => 1 },
         type         => { isa => ContactType,  optional => 1 },
     );
