@@ -8,6 +8,8 @@ use MooseX::Params::Validate;
 
 use WWW::LogicBoxes::Types qw( DomainName DomainTransfer Int );
 
+use WWW::LogicBoxes::DomainRequest::Transfer;
+
 use Try::Tiny;
 use Carp;
 
