@@ -75,7 +75,7 @@ WWW::LogicBoxes::Role::Command::Domain::Registration - Domain Registration Relat
 
     # Creation
     my $registration_request = WWW::LogicBoxes::DomainRequest::Registration->new( ... );
-    my $domain = $logic_boxes->register_domain( $registration_request );
+    my $domain = $logic_boxes->register_domain( request => $registration_request );
 
     # Deletion
     $logic_boxes->delete_domain_registration_by_id( $domain->id );
@@ -105,7 +105,7 @@ Implements domain registration related operations with the L<LogicBoxes's|http:/
     my $logic_boxes = WWW::LogicBoxes->new( ... );
 
     my $registration_request = WWW::LogicBoxes::DomainRequest::Registration->new( ... );
-    my $domain = $logic_boxes->register_domain( $registration_request );
+    my $domain = $logic_boxes->register_domain( request => $registration_request );
 
 Given a L<WWW::LogicBoxes::DomainRequest::Registration> or a HashRef that can be coreced into a L<WWW::LogicBoxes::DomainRequest::Registration>, attempts to register a domain with L<LogicBoxes|http://www.logicboxes.com>.
 
