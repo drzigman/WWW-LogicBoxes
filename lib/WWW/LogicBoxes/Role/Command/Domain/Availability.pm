@@ -50,25 +50,17 @@ sub check_domain_availability {
                 }
               );
         }
-        else {
-            # Suggestion Response Record
-            for my $sld ( keys %{ $response->{$domain_name} } ) {
-                for my $tld ( keys %{ $response->{$domain_name}{$sld} } ) {
-                    push @domain_availabilities,
-                      WWW::LogicBoxes::DomainAvailability->new(
-                        {
-                            name => lc sprintf( '%s.%s', $sld, $tld ),
-                            is_available =>
-                              $response->{$domain_name}{$sld}{$tld} eq
-                              "available" ? 1 : 0,
-                        }
-                      );
-                }
-            }
-        }
+        
     }
-
-    return \@domain_availabilities;
+    if ($args{suggestions}) {
+        my $keywords = join(" ", @{$args{slds}});
+        
+        my @suggestions = $self->suggest_domain_names({keyword => $keywords, tld_only => $args{tlds}, exact_match => 0});
+        push @domain_availabilities, @suggestions;
+    }
+    
+        return \@domain_availabilities;
+    
 }
 
 sub suggest_domain_names {
