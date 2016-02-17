@@ -47,7 +47,7 @@ subtest 'Test Unavailable Domain' => sub {
                 suggestions => 1,
             );
         } 'Lives through checking domain availability';
-
+        
         if( cmp_ok( scalar @{ $domain_availabilities }, '>', 1, 'Correct number of domain availability records' ) ) {
             my $domain_availability = first {
                 $_->name eq "$sld.$tld"
