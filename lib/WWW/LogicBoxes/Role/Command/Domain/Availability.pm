@@ -76,7 +76,7 @@ sub suggest_domain_names {
         phrase      => { isa => Str  },
         tlds        => { isa => Strs },
         hyphen      => { isa => Bool, optional => 1 },
-        related     => { isa => Bool, optional => 0 },
+        related     => { isa => Bool, default => 0 },
         num_results => { isa => Int,  default => 10 },
     );
 
