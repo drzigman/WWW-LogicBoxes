@@ -12,6 +12,8 @@ use WWW::LogicBoxes::DomainAvailability;
 
 use Data::Validate::Domain qw( is_domain );
 
+use Carp;
+
 requires 'submit';
 
 # VERSION
@@ -31,10 +33,8 @@ sub check_domain_availability {
         params => {
             'domain-name' => $args{slds},
             'tlds'        => $args{tlds},
-            'suggest-alternative' => $args{suggestions} ? 'true' : 'false',
         }
     });
-
 
     my @domain_availabilities;
     for my $domain_name ( keys %{ $response }) {
@@ -58,6 +58,14 @@ sub check_domain_availability {
         }
     }
 
+    if( $args{suggestions} ) {
+        push @domain_availabilities, $self->suggest_domain_names(
+            phrase  => join(' ', @{ $args{slds} } ),
+            tlds    => $args{tlds},
+            related => 1,
+        );
+    }
+
     return \@domain_availabilities;
 }
 
@@ -67,33 +75,31 @@ sub suggest_domain_names {
         \@_,
         phrase      => { isa => Str  },
         tlds        => { isa => Strs },
-        hyphen      => { isa => Bool, default => 0 },
-        related     => { isa => Bool, default => 0 },
+        hyphen      => { isa => Bool, optional => 1 },
+        related     => { isa => Bool, optional => 0 },
         num_results => { isa => Int,  default => 10 },
     );
 
+    exists $args{hyphen}  and carp 'The hyphen argument is deprecated, please see POD for more information';
+
     my $response = $self->submit({
-        method => 'domains__suggest_names',
+        method => 'domains__v5__suggest_names',
         params => {
-            keyword          => $args{phrase},
-            tlds             => $args{tlds},
-            'hyphen-allowed' => $args{hyphen}  ? 'true' : 'false',
-            'add-related'    => $args{related} ? 'true' : 'false',
-            'no-of-results'  => $args{num_results},
+            keyword       => $args{phrase},
+            'tld-only'    => $args{tlds},
+            'exact-match' => !$args{related},
         }
     });
 
     my @domain_availabilities;
-    for my $sld (keys %{ $response }) {
-        for my $tld ( keys %{ $response->{$sld} }) {
-            push @domain_availabilities, WWW::LogicBoxes::DomainAvailability->new({
-                name         => lc sprintf('%s.%s', $sld, $tld ),
-                is_available => $response->{$sld}{$tld} eq "available" ? 1 : 0,
-            });
-        }
+    for my $domain_name (keys %{ $response }) {
+        push @domain_availabilities, WWW::LogicBoxes::DomainAvailability->new({
+            name         => lc $domain_name,
+            is_available => $response->{$domain_name}{status} eq "available" ? 1 : 0,
+        });
     }
 
-    return \@domain_availabilities;
+    return [ splice( @domain_availabilities, 0, $args{num_results} * scalar @{ $args{tlds} } ) ];
 }
 
 1;
@@ -131,7 +137,7 @@ WWW::LogicBoxes::Role::Command::Domain::Availability - Domain Availability Relat
     my $domain_availabilities = $logic_boxes->suggest_domain_names(
         phrase      => 'fast race cars',
         tlds        => [qw( com net org )],
-        hyphen      => 0,
+        hyphen      => 0,   # DEPRECATED!  Will Generate Warnings (see Method for more information)
         related     => 1,
         num_results => 10,
     );
@@ -177,7 +183,7 @@ Implements domain availability related operations with the L<LogicBoxes's|http:/
         }
     }
 
-Given an ArrayRef of slds and tlds returns an ArrayRef of L<WWW::LogicBoxes::DomainAvailability> objects.  Optionally takes suggestions params (defaults to false), if specified then additional domain suggestions will be returned.
+Given an ArrayRef of slds and tlds returns an ArrayRef of L<WWW::LogicBoxes::DomainAvailability> objects.  Optionally takes suggestions params (defaults to false), if specified then additional domain suggestions will be returned using a search term of the list of slds concatenated together with spaces.
 
 =head2 suggest_domain_names
 
@@ -188,8 +194,8 @@ Given an ArrayRef of slds and tlds returns an ArrayRef of L<WWW::LogicBoxes::Dom
     my $domain_availabilities = $logic_boxes->suggest_domain_names(
         phrase      => 'fast race cars',
         tlds        => [qw( com net org )],
-        hyphen      => 0,
-        related     => 1,
+        hyphen      => 0,     # DEPRECATED!  Will Generate Warnings.
+        related     => 0,
         num_results => 10,
     );
 
@@ -218,9 +224,11 @@ ArrayRef of Public Suffixes to return domains for.
 
 Default false, if true will include - hacks.
 
+B<NOTE> THIS ATTRIBUTE IS DEPRECATED.  Passing it is still supported (for backwards compaitability) but it has not effect on the results.  Usage will generated the carp'ed warning 'The hyphen argument is deprecated, please see POD for more information''
+
 =item related
 
-Default false, if true will include related domains.
+Default false, if true will include related domains based on related keyboard (if you specify 'fast' you may get results with 'quick', 'instant' and 'hurry')
 
 =item num_results
 
