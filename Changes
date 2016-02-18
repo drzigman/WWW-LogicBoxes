@@ -1,3 +1,7 @@
+v1.0.6  2016-02-18
+  - Fixed minor bug where suggest_domain_names method was treating related as
+    optional => 0 instead of default => 0
+
 v1.0.5 2016-02-17
   - Refactored domain suggestions to use the new V5 LogicBoxes
     Suggestion API
