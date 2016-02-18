@@ -1,3 +1,14 @@
+v1.0.5 2016-02-17
+  - Refactored domain suggestions to use the new V5 LogicBoxes
+    Suggestion API
+    - This *had* to happen because LogicBoxes is stopping support for
+      the older API method
+    - Usage of the hyphen attribute now triggers deprecation warnings
+  - Added missing use statement to
+    WWW::LogicBoxes::Role::Command::Domain::Transfer
+  - Fixed bug in POD for register_domain's request attribute
+  - Implemented Support for Updating Contacts
+
 v1.0.4    2016-02-15
   - Added missing coercion to WWW::LogicBoxes::Role::Command::Contact's
     create_contact
