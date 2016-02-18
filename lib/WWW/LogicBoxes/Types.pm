@@ -41,6 +41,8 @@ use MooseX::Types -declare => [qw(
     Contact
     Customer
     Domain
+    DomainAvailability
+    DomainAvailabilities
     DomainRegistration
     DomainTransfer
     PrivateNameServer
@@ -97,6 +99,9 @@ class_type DateTime, { class => 'DateTime' };
 class_type Domain, { class => 'WWW::LogicBoxes::Domain' };
 coerce Domain, from HashRef,
     via { WWW::LogicBoxes::Domain->new( $_ ) };
+
+class_type DomainAvailability, { class => 'WWW::LogicBoxes::DomainAvailability' };
+subtype DomainAvailabilities, as ArrayRef[DomainAvailability];
 
 class_type DomainRegistration, { class => 'WWW::LogicBoxes::DomainRequest::Registration' };
 coerce DomainRegistration, from HashRef,
