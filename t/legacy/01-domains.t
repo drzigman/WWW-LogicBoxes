@@ -68,34 +68,4 @@ subtest 'Test Available Domains' => sub {
     }
 };
 
-subtest 'Suggest Domain Names' => sub {
-    my $response;
-
-    lives_ok {
-        $response = $logic_boxes->domains__suggest_names(
-            {
-                'keyword'        => 'car',
-                'tlds'           => [ 'com', 'net', 'org' ],
-                'no-of-results'  => 10,
-                'hypehn-allowed' => 'false',
-                'add-related'    => 'true',
-            }
-        );
-    }
-    'Check the name suggestion functionality';
-
-    my $json;
-    lives_ok {
-        $json = decode_json( $response );
-    } 'Lives through decoding json';
-
-    for my $sld ( keys %{ $json } ) {
-        for my $tld (qw( com net org )) {
-            my $domain = sprintf('%s.%s', $sld, $tld );
-            my $status = $json->{$sld}{$tld};
-            ok( $status eq 'available' || $status eq 'notavailable', "$domain is $status" );
-        }
-    }
-};
-
 done_testing;
