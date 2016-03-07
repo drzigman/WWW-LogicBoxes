@@ -64,7 +64,7 @@ sub get_contact_by_id {
         }
     }
     catch {
-        if( $_ =~ m/^Invalid contact-id/ ) {
+        if( $_ =~ m/^Invalid contact-id/ || $_ =~ m/^No Entity found/ ) {
             return;
         }
 
