@@ -364,7 +364,7 @@ Special thanks to the following individuals who have offered commits, bug report
 
 =item Brandon Husbands
 
-=item Slaven Rezić
+=item Slaven Rezic
 
 =back
 
