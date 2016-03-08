@@ -354,6 +354,20 @@ Robert Stone, C<< <drzigman AT cpan DOT org > >>
 
 Thanks to L<HostGator|http://hostgator.com> and L<BrainStorm Incubator|http://brainstormincubator.com> for funding the development of this module and providing test resources.
 
+=head1 CONTRIBUTIONS
+
+Special thanks to the following individuals who have offered commits, bug reports, and/or pull requests.
+
+=over 4
+
+=item Doug Schrag
+
+=item Brandon Husbands
+
+=item Slaven Rezić
+
+=back
+
 =head1 COPYRIGHT & LICENSE
 
 Copyright 2016 Robert Stone
