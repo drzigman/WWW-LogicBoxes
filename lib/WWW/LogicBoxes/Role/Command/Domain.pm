@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int PrivateNameServer Str );
+use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int InvoiceOption PrivateNameServer Str );
 
 use WWW::LogicBoxes::Domain::Factory;
 
@@ -293,6 +293,50 @@ sub update_domain_nameservers {
     };
 }
 
+sub renew_domain {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id             => { isa => Int },
+        years          => { isa => Int },
+        is_private     => { isa => Bool, optional => 1 },
+        invoice_option => { isa => InvoiceOption, default => 'NoInvoice' },
+    );
+
+    return try {
+        my $domain = $self->get_domain_by_id( $args{id} );
+
+        if( !$domain ) {
+            croak 'No such domain';
+        }
+
+        $domain->status eq 'Deleted' and croak 'Domain is already deleted';
+
+        $self->submit({
+            method => 'domains__renew',
+            params => {
+                'order-id'         => $args{id},
+                'years'            => $args{years},
+                'exp-date'         => $domain->expiration_date->epoch,
+                'invoice-option'   =>  $args{invoice_option},
+                'purchase-privacy' => $args{is_private} // $domain->is_private,
+            }
+        });
+
+        return $self->get_domain_by_id( $args{id} );
+    }
+    catch {
+        if( $_ =~ m/^No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
+        elsif( $_ =~ m/A Domain Name cannot be extended beyond/ ) {
+            croak 'Unable to renew, would violate max registration length';
+        }
+
+        croak $_;
+    };
+}
+
 1;
 
 __END__
@@ -349,6 +393,14 @@ WWW::LogicBoxes::Role::Command::Domain - Domain Related Operations
     $logic_boxes->update_domain_nameservers(
         id          => $domain->id,
         nameservers => [ 'ns1.logicboxes.com', 'ns1.logicboxes.com' ],
+    );
+
+    # Renewals
+    $logic_boxes->renew_domain(
+        id             => $domain->id,
+        years          => 1,
+        is_private     => 1,
+        invoice_option => 'NoInvoice',
     );
 
 =head1 REQUIRES
@@ -481,5 +533,44 @@ Given an Integer L<domain|WWW::LogicBoxes::Domain> id and an optional reason ( d
     );
 
 Given an Integer L<domain|WWW::LogicBoxes::Domain> id and an ArrayRef of nameserver hostnames, sets the L<domain|WWW::LogicBoxes::Domain>'s authoritative nameservers.
+
+=head2 renew_domain
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBooxes::Domain;
+
+    my $logic_boxes = WWW::LogicBoxe->new( ... );
+    $logic_boxes->renew_domain(
+        id             => $domain->id,
+        years          => 1,
+        is_private     => 1,
+        invoice_option => 'NoInvoice',
+    );
+
+Extends the registration term for the specified domain by the specified number of years.  Note, there is a limit as to how far into the future the expiration_date can be and it's specific to each TLD, see L<http://manage.logicboxes.com/kb/servlet/KBServlet/faq1375.html> for details.
+
+Arguments:
+
+=over 4
+
+=item id
+
+The domain id to renew
+
+=item years
+
+The number of years
+
+=item is_private
+
+This is optional, if not specified then the current privacy status of the domain will be used.  If there is no charge for domain privacy in your reseller panel then this field doesn't really matter.  However, if there is a cost for it and you don't pass is_private => 1 then the domain privacy will be cancelled since it's term will not match the registration term.
+
+=item invoice_option
+
+See L<WWW::LogicBoxes::DomainRequest/invoice_option> for additional details about Invoicing Options.  Defaults to NoInvoice.
+
+=back
+
+Returns an instance of the domain object.
 
 =cut
