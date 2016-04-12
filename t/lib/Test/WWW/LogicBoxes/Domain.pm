@@ -59,6 +59,7 @@ sub create_domain {
         } 'Lives through domain registration';
 
         note( 'Domain ID: ' . $domain->id );
+        note( 'Domain Name: ' . $domain->name );
     };
 
     return $domain;

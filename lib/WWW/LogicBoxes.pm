@@ -225,6 +225,8 @@ Retrieval of and management of registered domains.
 
 =item L<update_domain_nameservers|WWW::LogicBoxes::Role::Command::Domain/update_domain_nameservers>
 
+=item L<renew_domain|WWW::LogicBoxes::Role::Command::Domain/renew_domain>
+
 =back
 
 =head2 L<Domain Private Nameservers|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer>
