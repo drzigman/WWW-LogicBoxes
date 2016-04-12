@@ -37,8 +37,8 @@ subtest 'Delete Valid Domain Registration' => sub {
         isa_ok( $retrieved_domain, 'WWW::LogicBoxes::Domain' );
     };
 
-    sleep 10;
     note( 'Waiting for LogicBoxes to delete domain' );
+    sleep 10;
 
     subtest 'Retrieve Deleted Domain' => sub {
         my $retrieved_domain;
