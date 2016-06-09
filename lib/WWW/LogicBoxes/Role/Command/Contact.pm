@@ -9,6 +9,7 @@ use MooseX::Params::Validate;
 use WWW::LogicBoxes::Types qw( Contact Int );
 
 use WWW::LogicBoxes::Contact;
+use WWW::LogicBoxes::Contact::US;
 
 use Try::Tiny;
 use Carp;
