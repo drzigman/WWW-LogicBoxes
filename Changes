@@ -1,3 +1,6 @@
+v1.2.1 2016-06-09
+  - Fixed Coercion bug for US Contacts, was treating them as regular contacts
+
 v1.2.0 2016-04-12
   - Implemented support for renewing existing domain registrations
 

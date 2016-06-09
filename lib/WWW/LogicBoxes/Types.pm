@@ -87,8 +87,10 @@ enum ResponseType,       [qw( xml json xml_simple )];
 enum VerificationStatus, [qw( Verified Pending Suspended NA )];
 
 class_type Contact, { class => 'WWW::LogicBoxes::Contact' };
-coerce Contact, from HashRef,
-    via { WWW::LogicBoxes::Contact->new( $_ ) };
+coerce Contact, from HashRef, via {
+    exists $_->{nexus_purpose} and return WWW::LogicBoxes::Contact::US->new( $_ );
+    return WWW::LogicBoxes::Contact->new( $_ );
+};
 
 class_type Customer, { class => 'WWW::LogicBoxes::Customer' };
 coerce Customer, from HashRef,
