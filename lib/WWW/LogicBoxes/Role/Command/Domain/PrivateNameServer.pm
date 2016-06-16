@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( DomainName Int IPv4 PrivateNameServer );
+use WWW::LogicBoxes::Types qw( DomainName Int IP PrivateNameServer );
 
 use WWW::LogicBoxes::PrivateNameServer;
 
@@ -97,8 +97,8 @@ sub modify_private_nameserver_ip {
         \@_,
         domain_id => { isa => Int },
         name      => { isa => DomainName },
-        old_ip    => { isa => IPv4 },
-        new_ip    => { isa => IPv4 },
+        old_ip    => { isa => IP },
+        new_ip    => { isa => IP },
     );
 
     return try {
@@ -140,7 +140,7 @@ sub delete_private_nameserver_ip {
         \@_,
         domain_id => { isa => Int },
         name      => { isa => DomainName },
-        ip        => { isa => IPv4 },
+        ip        => { isa => IP },
     );
 
     return try {
@@ -279,7 +279,7 @@ B<NOTE> All private nameservers must be a subdomain of the parent domain.  If th
     my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
         domain_id => $domain->id,
         name      => 'ns1.' . $domain->name,
-        ips       => [ '4.2.2.1' ],
+        ips       => [ '4.2.2.1', '2001:4860:4860:0:0:0:0:8888' ],
     );
 
     $logic_boxes->create_private_nameserver( $private_nameserver );
@@ -312,7 +312,7 @@ Given an Integer L<domain|WWW::LogicBoxes::Domain> id, the old nameserver hostna
         domain_id => $domain->id,
         name      => 'ns1.' . $domain->name,
         old_ip    => '4.2.2.1',
-        new_ip    => '8.8.8.8',
+        new_ip    => '2001:4860:4860:0:0:0:0:8888',
     );
 
 Given an Integer L<domain|WWW::LogicBoxes::Domain> id, nameserver hostname, an old_ip (that is currently assigned to the L<private nameserver|WWW::LogicBoxes::PrivateNameServer>), and a new_ip, modifies the ips assoicated with a L<WWW::LogicBoxes::PrivateNameServer>.
@@ -327,7 +327,7 @@ Given an Integer L<domain|WWW::LogicBoxes::Domain> id, nameserver hostname, an o
     $logic_boxes->delete_private_nameserver_ip(
         domain_id => $domain->id,
         name      => 'ns1.' . $domain->name,
-        ip        => '4.2.2.1',
+        ip        => '4.2.2.1', # Or an IPv4 Address
     );
 
 Given an Integer L<domain|WWW::LogicBoxes::Domain> id, nameserver hostname, and an ip (that is currently assigned to the L<private nameserver|WWW::LogicBoxes::PrivateNameServer>), removes the ip assoicated with a L<WWW::LogicBoxes::PrivateNameServer>.

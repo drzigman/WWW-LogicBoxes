@@ -5,7 +5,7 @@ use warnings;
 
 use Data::Validate::Domain qw( is_domain );
 use Data::Validate::Email qw( is_email );
-use Data::Validate::IP qw( is_ipv4 );
+use Data::Validate::IP qw( is_ipv4 is_ipv6 );
 use Data::Validate::URI qw( is_uri );
 
 # VERSION
@@ -26,8 +26,12 @@ use MooseX::Types -declare => [qw(
     DomainStatus
     EmailAddress
     InvoiceOption
+    IP
+    IPs
     IPv4
     IPv4s
+    IPv6
+    IPv6s
     Language
     NexusCategory
     NexusPurpose
@@ -138,6 +142,14 @@ subtype IPv4, as Str,
     where { is_ipv4( $_ ) },
     message { "$_ is not a valid ipv4 IP Address" };
 subtype IPv4s, as ArrayRef[IPv4];
+
+subtype IPv6, as Str,
+    where { is_ipv6( $_ ) },
+    message { "$_ is not a valid ipv6 IP Address" };
+subtype IPv6s, as ArrayRef[IPv6];
+
+subtype IP, as IPv4 | IPv6;
+subtype IPs, as ArrayRef[IP];
 
 subtype Password, as Str,
     where {(

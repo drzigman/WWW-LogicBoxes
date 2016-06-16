@@ -116,31 +116,42 @@ subtest 'Rename Private Nameserver To Private Nameserver That Already Exists' =>
 };
 
 subtest 'Rename Private Nameserver' => sub {
-    my $domain = create_domain();
-    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
-        domain_id => $domain->id,
-        name      => 'ns1.' . $domain->name,
-        ips       => [ '4.2.2.1', '8.8.8.8' ],
+    my %ips = (
+        IPv4 => [ '4.2.2.1', '8.8.8.8' ],
+        IPv6 => [ '2001:4860:4860:0:0:0:0:8844', '2001:4860:4860:0:0:0:0:8888' ],
     );
 
-    lives_ok {
-        $logic_boxes->create_private_nameserver( $private_nameserver );
-    } 'Lives through creation of private nameserver';
+    for my $ip_version ( keys %ips ) {
+        subtest $ip_version => sub {
+            my $ips = $ips{ $ip_version };
 
-    lives_ok {
-        $logic_boxes->rename_private_nameserver(
-            domain_id => $domain->id,
-            old_name  => $private_nameserver->name,
-            new_name  => 'ns3.' . $domain->name,
-        );
-    }  'Lives through renaming private name server';
+            my $domain = create_domain();
+            my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
+                domain_id => $domain->id,
+                name      => 'ns1.' . $domain->name,
+                ips       => $ips,
+            );
 
-    my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
-    if( cmp_ok( scalar @{ $retrieved_domain->private_nameservers }, '==', 1, 'Correct number of private nameservers' ) ) {
-        my $retrieved_private_nameserver = $retrieved_domain->private_nameservers->[0];
+            lives_ok {
+                $logic_boxes->create_private_nameserver( $private_nameserver );
+            } 'Lives through creation of private nameserver';
 
-        cmp_ok( $retrieved_private_nameserver->name, 'eq', 'ns3.' . $domain->name, 'Correct name' );
-        cmp_bag( $private_nameserver->ips, $retrieved_private_nameserver->ips, 'Correct ips' );
+            lives_ok {
+                $logic_boxes->rename_private_nameserver(
+                    domain_id => $domain->id,
+                    old_name  => $private_nameserver->name,
+                    new_name  => 'ns3.' . $domain->name,
+                );
+            }  'Lives through renaming private name server';
+
+            my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+            if( cmp_ok( scalar @{ $retrieved_domain->private_nameservers }, '==', 1, 'Correct number of private nameservers' ) ) {
+                my $retrieved_private_nameserver = $retrieved_domain->private_nameservers->[0];
+
+                cmp_ok( $retrieved_private_nameserver->name, 'eq', 'ns3.' . $domain->name, 'Correct name' );
+                cmp_bag( $private_nameserver->ips, $retrieved_private_nameserver->ips, 'Correct ips' );
+            }
+        };
     }
 };
 

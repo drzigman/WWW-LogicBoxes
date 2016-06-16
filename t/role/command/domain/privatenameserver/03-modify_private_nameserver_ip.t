@@ -127,32 +127,44 @@ subtest 'Modify Private Nameserver IP - Change To IP Already In Use' => sub {
 };
 
 subtest 'Modify Private Nameserver IP' => sub {
-    my $domain = create_domain();
-    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
-        domain_id => $domain->id,
-        name      => 'ns1.' . $domain->name,
-        ips       => [ '4.2.2.1' ],
+    my %ips = (
+        IPv4 => { original_ip => '8.8.4.4', updated_ip => '8.8.8.8' },
+        IPv6 => { original_ip => '2001:4860:4860:0:0:0:0:8844', updated_ip => '2001:4860:4860:0:0:0:0:8888' },
     );
 
-    lives_ok {
-        $logic_boxes->create_private_nameserver( $private_nameserver );
-    } 'Lives through creation of private nameserver';
+    for my $ip_version ( keys %ips ) {
+        subtest $ip_version => sub {
+            my $original_ip = $ips{ $ip_version }{ original_ip };
+            my $updated_ip  = $ips{ $ip_version }{ updated_ip };
 
-    lives_ok {
-        $logic_boxes->modify_private_nameserver_ip(
-            domain_id => $domain->id,
-            name      => $private_nameserver->name,
-            old_ip    => '4.2.2.1',
-            new_ip    => '8.8.8.8',
-        );
-    } 'Lives through changing private nameserver ip';
+            my $domain = create_domain();
+            my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
+                domain_id => $domain->id,
+                name      => 'ns1.' . $domain->name,
+                ips       => [ $original_ip ],
+            );
 
-    my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
-    if( cmp_ok( scalar @{ $retrieved_domain->private_nameservers }, '==', 1, 'Correct number of private nameservers' ) ) {
-        my $retrieved_private_nameserver = $retrieved_domain->private_nameservers->[0];
+            lives_ok {
+                $logic_boxes->create_private_nameserver( $private_nameserver );
+            } 'Lives through creation of private nameserver';
 
-        cmp_ok( $retrieved_private_nameserver->name, 'eq', $private_nameserver->name, 'Correct name' );
-        cmp_bag( $retrieved_private_nameserver->ips, [ '8.8.8.8' ], 'Correct ips' );
+            lives_ok {
+                $logic_boxes->modify_private_nameserver_ip(
+                    domain_id => $domain->id,
+                    name      => $private_nameserver->name,
+                    old_ip    => $original_ip,
+                    new_ip    => $updated_ip,
+                );
+            } 'Lives through changing private nameserver ip';
+
+            my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+            if( cmp_ok( scalar @{ $retrieved_domain->private_nameservers }, '==', 1, 'Correct number of private nameservers' ) ) {
+                my $retrieved_private_nameserver = $retrieved_domain->private_nameservers->[0];
+
+                cmp_ok( $retrieved_private_nameserver->name, 'eq', $private_nameserver->name, 'Correct name' );
+                cmp_bag( $retrieved_private_nameserver->ips, [ $updated_ip ], 'Correct ips' );
+            }
+        };
     }
 };
 
