@@ -61,49 +61,60 @@ subtest 'Delete Private Nameserver IP for Nameserver That Lacks that IP' => sub 
 };
 
 subtest 'Delete Private Nameserver IP' => sub {
-    my $domain = create_domain();
-
-    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
-        domain_id => $domain->id,
-        name      => 'ns1.' . $domain->name,
-        ips       => [ '4.2.2.1', '8.8.8.8' ],
+    my %ips = (
+        IPv4 => [ '8.8.4.4', '8.8.8.8' ],
+        IPv6 => [ '2001:4860:4860:0:0:0:0:8844', '2001:4860:4860:0:0:0:0:8888' ],
     );
 
-    lives_ok {
-        $logic_boxes->create_private_nameserver( $private_nameserver );
-    } 'Lives through creating private nameserver';
+    for my $ip_version ( keys %ips ) {
+        subtest $ip_version => sub {
+            my $ips = $ips{ $ip_version };
 
-    subtest 'Delete First IP' => sub {
-        lives_ok {
-            $logic_boxes->delete_private_nameserver_ip(
+            my $domain = create_domain();
+
+            my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
                 domain_id => $domain->id,
-                name      => $private_nameserver->name,
-                ip        => '4.2.2.1',
+                name      => 'ns1.' . $domain->name,
+                ips       => $ips,
             );
-        } 'Lives through deleting ip';
 
-        my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+            lives_ok {
+                $logic_boxes->create_private_nameserver( $private_nameserver );
+            } 'Lives through creating private nameserver';
 
-        if( cmp_ok( scalar @{ $retrieved_domain->private_nameservers }, '==', 1, 'Correct number of private nameservers' ) ) {
-            my $retrieved_private_nameserver = $retrieved_domain->private_nameservers->[0];
+            subtest 'Delete First IP' => sub {
+                lives_ok {
+                    $logic_boxes->delete_private_nameserver_ip(
+                        domain_id => $domain->id,
+                        name      => $private_nameserver->name,
+                        ip        => $ips->[0],
+                    );
+                } 'Lives through deleting ip';
 
-            cmp_bag( $retrieved_private_nameserver->ips, [ '8.8.8.8' ], 'Correct ips' );
-        }
-    };
+                my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
 
-    subtest 'Delete Last IP' => sub {
-        lives_ok {
-            $logic_boxes->delete_private_nameserver_ip(
-                domain_id => $domain->id,
-                name      => $private_nameserver->name,
-                ip        => '8.8.8.8',
-            );
-        } 'Lives through deleting ip';
+                if( cmp_ok( scalar @{ $retrieved_domain->private_nameservers }, '==', 1, 'Correct number of private nameservers' ) ) {
+                    my $retrieved_private_nameserver = $retrieved_domain->private_nameservers->[0];
 
-        my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+                    cmp_bag( $retrieved_private_nameserver->ips, [ $ips->[1] ], 'Correct ips' );
+                }
+            };
 
-        ok( !$retrieved_domain->has_private_nameservers, 'Correctly lacks private nameservers' );
-    };
+            subtest 'Delete Last IP' => sub {
+                lives_ok {
+                    $logic_boxes->delete_private_nameserver_ip(
+                        domain_id => $domain->id,
+                        name      => $private_nameserver->name,
+                        ip        => $ips->[1],
+                    );
+                } 'Lives through deleting ip';
+
+                my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+
+                ok( !$retrieved_domain->has_private_nameservers, 'Correctly lacks private nameservers' );
+            };
+        };
+    }
 };
 
 done_testing;
