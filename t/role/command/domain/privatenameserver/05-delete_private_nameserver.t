@@ -43,24 +43,35 @@ subtest 'Delete Private Nameserver IP for Nameserver That Does Not Exist' => sub
 };
 
 subtest 'Delete Private Nameserver' => sub {
-    my $domain = create_domain();
-
-    my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
-        domain_id => $domain->id,
-        name      => 'ns1.' . $domain->name,
-        ips       => [ '4.2.2.1', '8.8.8.8' ],
+    my %ips = (
+        IPv4 => [ '8.8.4.4', '8.8.8.8' ],
+        IPv6 => [ '2001:4860:4860:0:0:0:0:8844', '2001:4860:4860:0:0:0:0:8888' ],
     );
 
-    lives_ok {
-        $logic_boxes->create_private_nameserver( $private_nameserver );
-    } 'Lives through creating private nameserver';
+    for my $ip_version ( keys %ips ) {
+        subtest $ip_version => sub {
+            my $ips = $ips{ $ip_version };
 
-    lives_ok {
-        $logic_boxes->delete_private_nameserver( $private_nameserver );
-    } 'Lives through deleting private nameserver';
+            my $domain = create_domain();
 
-    my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
-    ok( !$retrieved_domain->has_private_nameservers, 'Correctly lacks private nameservers' );
+            my $private_nameserver = WWW::LogicBoxes::PrivateNameServer->new(
+                domain_id => $domain->id,
+                name      => 'ns1.' . $domain->name,
+                ips       => $ips,
+            );
+
+            lives_ok {
+                $logic_boxes->create_private_nameserver( $private_nameserver );
+            } 'Lives through creating private nameserver';
+
+            lives_ok {
+                $logic_boxes->delete_private_nameserver( $private_nameserver );
+            } 'Lives through deleting private nameserver';
+
+            my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+            ok( !$retrieved_domain->has_private_nameservers, 'Correctly lacks private nameservers' );
+        };
+    }
 };
 
 done_testing;

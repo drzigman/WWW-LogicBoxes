@@ -1,3 +1,6 @@
+v1.3.0 2016-06-16
+  - Add support for IPv6 to Type Library and Private Nameservers
+
 v1.2.1 2016-06-09
   - Fixed Coercion bug for US Contacts, was treating them as regular contacts
 

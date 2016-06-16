@@ -7,7 +7,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use namespace::autoclean;
 
-use WWW::LogicBoxes::Types qw( DomainName Int IPv4s );
+use WWW::LogicBoxes::Types qw( DomainName Int IPs );
 
 # VERSION
 # ABSTRACT: LogicBoxes Private Nameserver
@@ -26,7 +26,7 @@ has name => (
 
 has ips => (
     is       => 'ro',
-    isa      => IPv4s,
+    isa      => IPs,
     required => 1,
 );
 
@@ -51,7 +51,7 @@ WWW::LogicBoxes::PrivateNameServer - Representation of Private Nameserver
     my $private_name_server = WWW::LogicBoxes::PrivateNameServer->new(
         domain_id => $domain->id,
         name      => 'ns1.' . $domain->name,
-        ips       => [ '4.2.2.1', '8.8.8.8' ],
+        ips       => [ '8.8.8.8', '2001:4860:4860:0:0:0:0:8888' ],  # IPv4 and IPv6 are supported
     );
 
     my $logic_boxes = WWW::LogicBoxes->new( ... );
@@ -76,6 +76,6 @@ The full domain name that will represent the private nameserver (ns1.test-domain
 
 =head2 B<ips>
 
-An ArrayRef of IPv4 addresses that the above L<name> should resolve to.
+An ArrayRef of IP addresses ( both IPv4 and IPv6 are supported ) that the above L<name> should resolve to.
 
 =cut

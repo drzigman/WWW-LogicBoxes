@@ -43,51 +43,62 @@ subtest 'Create Private Nameserver That Does Not Match Domain' => sub {
 };
 
 subtest 'Create Private Nameservers For Valid Domain' => sub {
-    my $domain = create_domain();
-    my @private_nameservers;
+    my %ips = (
+        IPv4 => [ '8.8.4.4', '8.8.8.8' ],
+        IPv6 => [ '2001:4860:4860:0:0:0:0:8844', '2001:4860:4860:0:0:0:0:8888' ],
+    );
 
-    subtest 'Create Private Nameservers' => sub {
-        subtest 'Create ns1' => sub {
-            push @private_nameservers, WWW::LogicBoxes::PrivateNameServer->new(
-                domain_id => $domain->id,
-                name      => 'ns1.' . $domain->name,
-                ips       => [ '4.2.2.1', '8.8.8.8' ],
-            );
+    for my $ip_version ( keys %ips ) {
+        subtest $ip_version => sub {
+            my $ips = $ips{ $ip_version },
 
-            lives_ok {
-                $logic_boxes->create_private_nameserver( $private_nameservers[-1] );
-            } 'Lives through private nameserver creation';
+            my $domain = create_domain();
+            my @private_nameservers;
+
+            subtest 'Create Private Nameservers' => sub {
+                subtest 'Create ns1' => sub {
+                    push @private_nameservers, WWW::LogicBoxes::PrivateNameServer->new(
+                        domain_id => $domain->id,
+                        name      => 'ns1.' . $domain->name,
+                        ips       => $ips,
+                    );
+
+                    lives_ok {
+                        $logic_boxes->create_private_nameserver( $private_nameservers[-1] );
+                    } 'Lives through private nameserver creation';
+                };
+
+                subtest 'Create ns2' => sub {
+                    push @private_nameservers, WWW::LogicBoxes::PrivateNameServer->new(
+                        domain_id => $domain->id,
+                        name      => 'ns2.' . $domain->name,
+                        ips       => $ips,
+                    );
+
+                    lives_ok {
+                        $logic_boxes->create_private_nameserver( $private_nameservers[-1] );
+                    } 'Lives through private nameserver creation';
+                };
+
+                my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+
+                cmp_bag( $retrieved_domain->private_nameservers, \@private_nameservers, 'Correct private_nameservers' );
+            };
+
+            subtest 'Assign Domain to Private Nameservers' => sub {
+                lives_ok {
+                    $logic_boxes->update_domain_nameservers(
+                        id          => $domain->id,
+                        nameservers => [ map { $_->name } @private_nameservers ],
+                    );
+                } 'Lives through assigning domain to private nameservers';
+
+                my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+
+                cmp_bag( $retrieved_domain->ns, [ map { $_->name } @private_nameservers ], 'Correct domain nameservers' );
+            };
         };
-
-        subtest 'Create ns2' => sub {
-            push @private_nameservers, WWW::LogicBoxes::PrivateNameServer->new(
-                domain_id => $domain->id,
-                name      => 'ns2.' . $domain->name,
-                ips       => [ '4.2.2.1', '8.8.8.8' ],
-            );
-
-            lives_ok {
-                $logic_boxes->create_private_nameserver( $private_nameservers[-1] );
-            } 'Lives through private nameserver creation';
-        };
-
-        my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
-
-        cmp_bag( $retrieved_domain->private_nameservers, \@private_nameservers, 'Correct private_nameservers' );
-    };
-
-    subtest 'Assign Domain to Private Nameservers' => sub {
-        lives_ok {
-            $logic_boxes->update_domain_nameservers(
-                id          => $domain->id,
-                nameservers => [ map { $_->name } @private_nameservers ],
-            );
-        } 'Lives through assigning domain to private nameservers';
-
-        my $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
-
-        cmp_bag( $retrieved_domain->ns, [ map { $_->name } @private_nameservers ], 'Correct domain nameservers' );
-    };
+    }
 };
 
 subtest 'Create Private Nameserver That Already Exist - Adds IP' => sub {
