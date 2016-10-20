@@ -11,6 +11,7 @@ use overload '""' => \&_to_string, fallback => 1;
 use WWW::LogicBoxes::Types qw( Str NumberPhone );
 
 use Number::Phone;
+use Try::Tiny;
 use Carp;
 
 # VERSION
@@ -49,7 +50,18 @@ around BUILDARGS => sub {
     }
 
     if( ref $args eq '' ) {
-        return $class->$orig( _number_phone_obj => Number::Phone->new( $args ) );
+        # Compensate for cases where the country code is present in both the
+        # country code field AND the phone number itself
+        my $number_phone;
+        for ( my $offset = 0; $offset < length $args && $offset < 4; $offset++ ) {
+            $number_phone = Number::Phone->new( substr( $args, $offset ) );
+
+            if( $number_phone ) {
+                last;
+            }
+        }
+
+        return $class->$orig( _number_phone_obj => $number_phone );
     }
     elsif( ( ref $args ) =~ m/Number::Phone/ ) {
         return $class->$orig( _number_phone_obj => $args );
