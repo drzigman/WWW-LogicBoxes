@@ -1,3 +1,7 @@
+v1.4.0 2016-10-21
+  - Make the Phone Number library more tolernate of bad phone numbers that
+    contain the country code twice ( +1.18005551212 )
+
 v1.3.0 2016-06-16
   - Add support for IPv6 to Type Library and Private Nameservers
 
