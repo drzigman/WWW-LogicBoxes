@@ -291,6 +291,14 @@ Request to transfer a domain.
 
 Private Name Server record for a domain.  Not all domains will have these.
 
+=head1 FACTORIES
+
+In cases where a domain or contact requires additional information (such as .us domains requirning nexus data) factories exist so that the correct subclassed object is returned.  As a consumer, you almost never want to call these directly, rather make use of the above L</COMMANDS> and let this library worry about constructing the correct objects.
+
+=head2 L<WWW::LogicBoxes::Contact::Factory>
+
+Constructs the correct subclassed contact.
+
 =head1 WITH
 
 L<WWW::LogicBoxes::Role::Command>
