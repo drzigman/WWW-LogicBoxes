@@ -8,8 +8,7 @@ use MooseX::Params::Validate;
 
 use WWW::LogicBoxes::Types qw( Contact Int );
 
-use WWW::LogicBoxes::Contact;
-use WWW::LogicBoxes::Contact::US;
+use WWW::LogicBoxes::Contact::Factory;
 
 use Try::Tiny;
 use Carp;
@@ -52,17 +51,7 @@ sub get_contact_by_id {
             },
         });
 
-        # TODO: Abstract this into a Factory that can contain multiple sets of attributes
-        # Because we only have normal and .us right now this works for now.
-        if( scalar @{ $response->{contacttype} } == 0 ) {
-            return WWW::LogicBoxes::Contact->construct_from_response($response);
-        }
-        elsif( grep { $_ eq 'domus' } @{ $response->{contacttype} } ) {
-            return WWW::LogicBoxes::Contact::US->construct_from_response($response);
-        }
-        else {
-            croak 'Unknown contact type';
-        }
+        return WWW::LogicBoxes::Contact::Factory->construct_from_response( $response );
     }
     catch {
         if( $_ =~ m/^Invalid contact-id/ || $_ =~ m/^No Entity found/ ) {
