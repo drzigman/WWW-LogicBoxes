@@ -8,6 +8,7 @@ use MooseX::Params::Validate;
 
 use WWW::LogicBoxes::Types qw( Contact Int );
 
+use WWW::LogicBoxes::Contact::CA::Agreement;
 use WWW::LogicBoxes::Contact::Factory;
 
 use Try::Tiny;
@@ -112,6 +113,24 @@ sub delete_contact_by_id {
     };
 }
 
+sub get_ca_registrant_agreement {
+    my $self   = shift;
+
+    return try {
+        my $response = $self->submit({
+            method => 'contacts__dotca__registrantagreement',
+        });
+
+        return WWW::LogicBoxes::Contact::CA::Agreement->new(
+            version => $response->{version},
+            content => $response->{agreement},
+        );
+    }
+    catch {
+        croak $_;
+    };
+}
+
 1;
 
 __END__
@@ -148,6 +167,9 @@ WWW::LogicBoxes::Role::Command::Contact - Contact Related Operations
 
     # Deletion
     $logic_boxes->delete_contact_by_id( $contact->id );
+
+    # CA Registrant Agreement
+    my $agreement = $logic_boxes->get_ca_registrant_agreement();
 
 =head1 REQURIES
 
@@ -215,5 +237,16 @@ Given an Integer ID, will delete the L<contact|WWW::LogicBoxes::Contact> with L<
 
 This method will croak if the contact is in use (assigned to a domain).
 
-=cut
+=head2 get_ca_registrant_agreement
 
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Contact;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $agreement = $logic_boxes->get_ca_registrant_agreement();
+
+Accepts no arguments, returns an instance of L<WWW::LogicBoxes::Contact::CA::Agreement> that describes the currently active and required CA Registrant Agreement.
+
+B<Note> Registrants are required to accept this agreement in order to register a .ca domain.
+
+=cut

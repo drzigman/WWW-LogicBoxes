@@ -165,6 +165,8 @@ Contacts are used in whois information and are required for domain registration.
 
 =item L<delete_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/delete_contact_by_id>
 
+=item L<get_ca_registrant_agreement|WWW::LogicBoxes::Role::Command::Contact/get_ca_registrant_agreement>
+
 =back
 
 =head2 L<Domain Availability|WWW::LogicBoxes::Role::Command::Domain::Availability>
@@ -262,6 +264,10 @@ WHOIS data contacts.  Typically (with few exceptions) domains contains a Registr
 =head2 L<WWW::LogicBoxes::Contact::US>
 
 Extended contact used for .us domain registrations that contains the required L<Nexus Data|http://www.neustar.us/the-ustld-nexus-requirements/>.
+
+=head2 L<WWW::LogicBoxes::Contact::CA::Agreement>
+
+The CA Registrant Agreement, contacts for .ca domains must accept it before being allowed to purchase .ca domains.
 
 =head2 L<WWW::LogicBoxes::Customer>
 
