@@ -1,3 +1,6 @@
+v1.6.0 2016-11-08
+  - Added Support for .ca Contacts and Registration/Retrieval of .ca Domains
+
 v1.5.0 2016-10-22
   - Introduced a contact factory to improve ability to construct Contact
     objects from LogicBoxes responses.
