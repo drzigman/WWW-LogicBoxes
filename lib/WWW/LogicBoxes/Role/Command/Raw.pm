@@ -181,7 +181,7 @@ sub install_methods {
                         my $uri = $self->_make_query_string(
                             api_class  => $api_class,
                             api_method => $api_method,
-                            params     => $args,
+                            $args ? ( params => $args ) : ( ),
                         );
 
                         ### Method Name: ( $method_name )
@@ -210,7 +210,7 @@ sub _make_query_string {
         \@_,
         api_class  => { isa => Str },
         api_method => { isa => Str },
-        params     => { isa => HashRef },
+        params     => { isa => HashRef, optional => 1 },
     );
 
     my $api_class = $args{api_class};
@@ -236,7 +236,9 @@ sub _make_query_string {
         croak 'Unable to construct query string without a password or api_key';
     }
 
-    $query_uri .= $self->_construct_get_args( $args{params} );
+    if( $args{params} ) {
+        $query_uri .= $self->_construct_get_args( $args{params} );
+    }
 
     return $query_uri;
 }

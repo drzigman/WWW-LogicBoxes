@@ -11,14 +11,52 @@ use MooseX::Params::Validate;
 use Test::WWW::LogicBoxes qw( create_api );
 use Test::WWW::LogicBoxes::Customer qw( create_customer );
 
-use WWW::LogicBoxes::Types qw( ContactType Int EmailAddress PhoneNumber Str );
+use WWW::LogicBoxes::Types qw( ContactType CPR Int EmailAddress PhoneNumber Str );
 use WWW::LogicBoxes::Customer;
 use WWW::LogicBoxes::Contact;
+use WWW::LogicBoxes::Contact::CA;
 
 use Exporter 'import';
-our @EXPORT_OK = qw( create_contact );
+our @EXPORT_OK = qw( create_contact create_ca_contact );
 
 sub create_contact {
+    my %args = _process_args( @_ );
+    my $api  = create_api( );
+
+    my $contact;
+    subtest 'Create Contact' => sub {
+        lives_ok {
+            $contact = WWW::LogicBoxes::Contact->new( %args );
+            $api->create_contact( contact => $contact );
+        } 'Lives through contact creation';
+
+        note( 'Contact ID: ' . $contact->id );
+    };
+
+    return $contact;
+}
+
+sub create_ca_contact {
+    my %args = _process_args( @_ );
+    my $api  = create_api( );
+
+    $args{cpr}               //= 'ABO',
+    $args{agreement_version} //= '2.0';
+
+    my $contact;
+    subtest 'Create Contact' => sub {
+        lives_ok {
+            $contact = WWW::LogicBoxes::Contact::CA->new( %args );
+            $api->create_contact( contact => $contact );
+        } 'Lives through contact creation';
+
+        note( 'Contact ID: ' . $contact->id );
+    };
+
+    return $contact;
+}
+
+sub _process_args {
     my ( %args ) = validated_hash(
         \@_,
         name         => { isa => Str,          optional => 1 },
@@ -35,6 +73,10 @@ sub create_contact {
         fax_number   => { isa => PhoneNumber,  optional => 1, coerce => 1 },
         customer_id  => { isa => Int,          optional => 1 },
         type         => { isa => ContactType,  optional => 1 },
+
+        # For .CA Contacts
+        cpr               => { isa => CPR, optional => 1 },
+        agreement_version => { isa => Str, optional => 1 },
     );
 
     $args{name}         //= 'Edsger Dijkstra';
@@ -48,19 +90,7 @@ sub create_contact {
     $args{phone_number} //= '18005551212';
     $args{customer_id}  //= create_customer()->id;
 
-    my $api = create_api( );
-
-    my $contact;
-    subtest 'Create Contact' => sub {
-        lives_ok {
-            $contact = WWW::LogicBoxes::Contact->new( %args );
-            $api->create_contact( contact => $contact );
-        } 'Lives through contact creation';
-
-        note( 'Contact ID: ' . $contact->id );
-    };
-
-    return $contact;
+    return %args;
 }
 
 1;

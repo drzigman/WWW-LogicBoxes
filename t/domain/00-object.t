@@ -36,6 +36,7 @@ subtest "$CLASS has the correct attributes" => sub {
 
 subtest "$CLASS has the correct predicates" => sub {
     has_method_ok( $CLASS, 'has_private_nameservers' );
+    has_method_ok( $CLASS, 'has_billing_contact_id' );
 };
 
 subtest "$CLASS has the correct methods" => sub {

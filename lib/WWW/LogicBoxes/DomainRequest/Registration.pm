@@ -31,7 +31,7 @@ sub construct_request {
         'reg-contact-id'     => $self->registrant_contact_id,
         'admin-contact-id'   => $self->admin_contact_id,
         'tech-contact-id'    => $self->technical_contact_id,
-        'billing-contact-id' => $self->billing_contact_id,
+        'billing-contact-id' => $self->has_billing_contact_id ? $self->billing_contact_id : -1,
         'invoice-option'     => $self->invoice_option,
         $self->is_private ? (
             'protect-privacy'  => 'true',
