@@ -59,11 +59,13 @@ sub construct_creation_request {
     $request->{'attr-name1'}  = 'CPR';
     $request->{'attr-value1'} = $self->cpr;
 
-    $request->{'attr-name2'}  = 'AgreementVersion';
-    $request->{'attr-value2'} = $self->agreement_version;
+    if( $self->has_agreement_version ) {
+        $request->{'attr-name2'}  = 'AgreementVersion';
+        $request->{'attr-value2'} = $self->agreement_version;
 
-    $request->{'attr-name3'}  = 'AgreementValue';
-    $request->{'attr-value3'} = 'y';
+        $request->{'attr-name3'}  = 'AgreementValue';
+        $request->{'attr-value3'} = 'y';
+    }
 
     return $request;
 }
@@ -93,6 +95,7 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 __END__
+=pod
 
 =head1 NAME
 
@@ -145,6 +148,8 @@ Representation of a L<LogicBoxes|http://www.logicboxes.com> domain contact for .
 =head2 B<name>
 
 The name has special restrictions based on if the CPR provided is for Individuals or Non Individuals.  Please see L<http://manage.logicboxes.com/kb/sites/default/files/Valid%20Contact%20Names.pdf> for a full listing of key words that must or must not be present.
+
+Also, the name of a CA Contact can not be changed!  If you really need to change it, you'll have to create a whole new L<WWW::Logicboxes::Contact::CA> with the desired information, replace it on any domain that uses the old contact, and then delete the old contact.
 
 =head2 B<cpr>
 
@@ -199,6 +204,8 @@ B<NOTE> For Non Individual CPRs the company name MUST be "N/A".
 =item TRS Trust established in Canada
 
 =back
+
+The cpr B<can not be changed> once the contact is created.
 
 =head2 agreement_version
 

@@ -74,6 +74,13 @@ sub update_contact {
         croak "Contact does not exist (it lacks an id)";
     }
 
+    if( $args{contact}->isa('WWW::LogicBoxes::Contact::CA') ) {
+        my $existing_contact = $self->get_contact_by_id( $args{contact}->id );
+        if( $existing_contact->cpr ne $args{contact}->cpr ) {
+            croak 'The CPR of a CA Contact can not be changed';
+        }
+    }
+
     return try {
         $self->submit({
             method => 'contacts__modify',
@@ -88,6 +95,12 @@ sub update_contact {
     catch {
         if( $_ =~ m/^Invalid contact-id/ || $_ =~ m/^No Entity found/ ) {
             croak 'Invalid Contact ID';
+        }
+
+        if( $args{contact}->isa('WWW::LogicBoxes::Contact::CA') ) {
+            if( $_ =~ m/^Name of .* contact cannot be modified/ ) {
+                croak 'The name of CA Contacts can not be modified';
+            }
         }
 
         croak $_;

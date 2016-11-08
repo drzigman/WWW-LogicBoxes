@@ -8,7 +8,7 @@ use Test::Exception;
 use String::Random qw( random_string );
 
 use FindBin;
-use lib "$FindBin::Bin/../../../lib";
+use lib "$FindBin::Bin/../../../../lib";
 use Test::WWW::LogicBoxes qw( create_api );
 use Test::WWW::LogicBoxes::Customer qw( create_customer );
 use Test::WWW::LogicBoxes::Contact qw( create_contact );
