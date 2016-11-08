@@ -265,6 +265,10 @@ WHOIS data contacts.  Typically (with few exceptions) domains contains a Registr
 
 Extended contact used for .us domain registrations that contains the required L<Nexus Data|http://www.neustar.us/the-ustld-nexus-requirements/>.
 
+=head2 L<WWW::LogicBoxes::Contact::CA>
+
+Extended contact used for .ca domain registrations that contains the required CPR and CA Registrant Agreement Data.
+
 =head2 L<WWW::LogicBoxes::Contact::CA::Agreement>
 
 The CA Registrant Agreement, contacts for .ca domains must accept it before being allowed to purchase .ca domains.

@@ -59,7 +59,6 @@ sub construct_from_response {
         nexus_category => $response->{NexusCategory},
     );
 
-
     return $contact;
 }
 
@@ -83,7 +82,7 @@ WWW::LogicBoxes::Contact::US - Representation of Domain Contact for .us Domains
 
     my $customer = WWW::LogicBoxes::Customer->new( ... ); # Valid LogicBoxes Customer
 
-    my $contact = WWW::LogicBoxes::Contact->new(
+    my $contact = WWW::LogicBoxes::Contact::US->new(
         id           => 42,
         name         => 'Edsger Dijkstra',
         company      => 'University of Texas at Austin',

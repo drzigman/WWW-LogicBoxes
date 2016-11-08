@@ -27,4 +27,8 @@ subtest "$CLASS has the correct attributes" => sub {
     has_attribute_ok( $CLASS, 'invoice_option' );
 };
 
+subtest "$CLASS has the correct predicates" => sub {
+    has_method_ok( $CLASS, 'has_billing_contact_id' );
+};
+
 done_testing;

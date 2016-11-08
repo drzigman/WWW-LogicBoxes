@@ -20,6 +20,9 @@ use MooseX::Types -declare => [qw(
     Strs
 
     ContactType
+    CPR
+    CPRIndividual
+    CPRNonIndividual
     DateTime
     DomainName
     DomainNames
@@ -82,6 +85,10 @@ enum ContactType, [qw(
     RuContact
     UkContact
 )];
+enum CPRIndividual,    [qw( ABO CCT LGR RES )];
+enum CPRNonIndividual, [qw( ASS CCO EDU GOV HOP INB LAM MAJ OMK PLT PRT TDM TRD TRS )];
+subtype CPR, as CPRIndividual | CPRNonIndividual;
+
 enum DomainStatus,       [ 'InActive', 'Active', 'Suspended', 'Pending Delete Restorable', 'Deleted', 'Archived' ];
 enum InvoiceOption,      [qw( NoInvoice PayInvoice KeepInvoice )];
 enum Language,           [qw( en )];
