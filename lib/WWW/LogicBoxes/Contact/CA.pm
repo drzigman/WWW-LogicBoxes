@@ -149,7 +149,7 @@ Representation of a L<LogicBoxes|http://www.logicboxes.com> domain contact for .
 
 The name has special restrictions based on if the CPR provided is for Individuals or Non Individuals.  Please see L<http://manage.logicboxes.com/kb/sites/default/files/Valid%20Contact%20Names.pdf> for a full listing of key words that must or must not be present.
 
-Also, the name of a CA Contact can not be changed!  If you really need to change it, you'll have to create a whole new L<WWW::Logicboxes::Contact::CA> with the desired information, replace it on any domain that uses the old contact, and then delete the old contact.
+Also, the name of a CA Contact can not be changed!  If you really need to change it, you'll have to create a whole new L<WWW::LogicBoxes::Contact::CA> with the desired information, replace it on any domain that uses the old contact, and then delete the old contact.
 
 =head2 B<cpr>
 
