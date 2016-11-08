@@ -8,6 +8,7 @@ use MooseX::Params::Validate;
 use WWW::LogicBoxes::Types qw( HashRef );
 
 use WWW::LogicBoxes::Contact;
+use WWW::LogicBoxes::Contact::CA;
 use WWW::LogicBoxes::Contact::US;
 
 use Carp;
@@ -19,7 +20,10 @@ sub construct_from_response {
     my $self         = shift;
     my ( $response ) = pos_validated_list( \@_, { isa => HashRef } );
 
-    if( grep { $_ eq 'domus' } @{ $response->{contacttype} } ) {
+    if( $response->{type} eq 'CaContact' ) {
+        return WWW::LogicBoxes::Contact::CA->construct_from_response( $response );
+    }
+    elsif( grep { $_ eq 'domus' } @{ $response->{contacttype} } ) {
         return WWW::LogicBoxes::Contact::US->construct_from_response($response);
     }
     else {

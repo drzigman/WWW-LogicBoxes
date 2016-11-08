@@ -59,7 +59,7 @@ sub submit {
     my (%args) = validated_hash(
         \@_,
         method => { isa => Str },
-        params => { isa => HashRef },
+        params => { isa => HashRef, optional => 1 },
     );
 
     my $response;
@@ -162,10 +162,10 @@ Primary interface to L<LogicBoxes|http://www.logicboxes.com> API that is used by
 
     my $response = $logic_boxes->submit({
         method => 'contacts__add',
-        params => $contact->construct_creation_request(),
+        params => $contact->construct_creation_request(),  # Optional for some methods
     });
 
-The submit method is what sends requests over to L<LogicBoxes|http://www.logicboxes.com>.  It accepts a L<raw method|WWW::LogicBoxes::Role::Command::Raw> and an HashRef of params.  For details on the structure of the params please see L<WWW::LogicBoxes::Role::Command::Raw>.
+The submit method is what sends requests over to L<LogicBoxes|http://www.logicboxes.com>.  It accepts a L<raw method|WWW::LogicBoxes::Role::Command::Raw> and an optional HashRef of params (almost all methods require params to be provided, but not all do).  For details on the structure of the params please see L<WWW::LogicBoxes::Role::Command::Raw>.
 
 The submit method returns a HashRef that represents the data returned by LogicBoxes.  There is logic built into submit such that requests are always made with a JSON response which is what drives the creation of the HashRef form the response.
 

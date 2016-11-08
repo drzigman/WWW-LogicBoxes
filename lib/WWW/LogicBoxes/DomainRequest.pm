@@ -9,6 +9,9 @@ use namespace::autoclean;
 
 use WWW::LogicBoxes::Types qw( Bool DomainName DomainNames Int InvoiceOption );
 
+use Carp;
+use Mozilla::PublicSuffix qw( public_suffix );
+
 # VERSION
 # ABSTRACT: Abstract Base Class for Domain Registration/Transfer Requests
 
@@ -49,9 +52,10 @@ has technical_contact_id => (
 );
 
 has billing_contact_id => (
-    is       => 'ro',
-    isa      => Int,
-    required => 1,
+    is        => 'ro',
+    isa       => Int,
+    required  => 0,
+    predicate => 'has_billing_contact_id',
 );
 
 has is_private => (
@@ -65,6 +69,23 @@ has invoice_option => (
     isa      => InvoiceOption,
     default  => 'NoInvoice',
 );
+
+sub BUILD {
+    my $self = shift;
+
+    my $tld = public_suffix( $self->name );
+
+    if( $tld eq 'ca' ) {
+        if( $self->has_billing_contact_id ) {
+            croak 'CA domains do not have a billing contact';
+        }
+    }
+    elsif( !$self->has_billing_contact_id ) {
+        croak 'A billing_contact_id is required';
+    }
+
+    return $self;
+}
 
 __PACKAGE__->meta->make_immutable;
 
@@ -109,11 +130,15 @@ A L<Contact|WWW::LogicBoxes::Contact> id for the Technical.
 
 =head2 B<billing_contact_id>
 
-A L<Contact|WWW::LogicBoxes::Contact> id for the Billing.
+A L<Contact|WWW::LogicBoxes::Contact> id for the Billing.  Offers a predicate of has_billing_contact_id.
+
+Almost all TLDs require a billing contact, however for .ca domains it B<must not> be provided.
 
 =head2 is_private
 
 Boolean indicating if this domain uses WHOIS Privacy.  Defaults to false.
+
+B<NOTE> Not all tlds support domain privacy.  For example, .us and .ca do not permit domain privacy.
 
 =head2 invoice_option
 

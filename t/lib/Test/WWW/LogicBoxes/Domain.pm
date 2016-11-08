@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+package Test::WWW::LogicBoxes::Domain;
 
 use strict;
 use warnings;

@@ -8,6 +8,7 @@ use MooseX::Params::Validate;
 
 use WWW::LogicBoxes::Types qw( Contact Int );
 
+use WWW::LogicBoxes::Contact::CA::Agreement;
 use WWW::LogicBoxes::Contact::Factory;
 
 use Try::Tiny;
@@ -73,6 +74,13 @@ sub update_contact {
         croak "Contact does not exist (it lacks an id)";
     }
 
+    if( $args{contact}->isa('WWW::LogicBoxes::Contact::CA') ) {
+        my $existing_contact = $self->get_contact_by_id( $args{contact}->id );
+        if( $existing_contact->cpr ne $args{contact}->cpr ) {
+            croak 'The CPR of a CA Contact can not be changed';
+        }
+    }
+
     return try {
         $self->submit({
             method => 'contacts__modify',
@@ -87,6 +95,12 @@ sub update_contact {
     catch {
         if( $_ =~ m/^Invalid contact-id/ || $_ =~ m/^No Entity found/ ) {
             croak 'Invalid Contact ID';
+        }
+
+        if( $args{contact}->isa('WWW::LogicBoxes::Contact::CA') ) {
+            if( $_ =~ m/^Name of .* contact cannot be modified/ ) {
+                croak 'The name of CA Contacts can not be modified';
+            }
         }
 
         croak $_;
@@ -106,6 +120,24 @@ sub delete_contact_by_id {
         });
 
         return;
+    }
+    catch {
+        croak $_;
+    };
+}
+
+sub get_ca_registrant_agreement {
+    my $self   = shift;
+
+    return try {
+        my $response = $self->submit({
+            method => 'contacts__dotca__registrantagreement',
+        });
+
+        return WWW::LogicBoxes::Contact::CA::Agreement->new(
+            version => $response->{version},
+            content => $response->{agreement},
+        );
     }
     catch {
         croak $_;
@@ -148,6 +180,9 @@ WWW::LogicBoxes::Role::Command::Contact - Contact Related Operations
 
     # Deletion
     $logic_boxes->delete_contact_by_id( $contact->id );
+
+    # CA Registrant Agreement
+    my $agreement = $logic_boxes->get_ca_registrant_agreement();
 
 =head1 REQURIES
 
@@ -215,5 +250,16 @@ Given an Integer ID, will delete the L<contact|WWW::LogicBoxes::Contact> with L<
 
 This method will croak if the contact is in use (assigned to a domain).
 
-=cut
+=head2 get_ca_registrant_agreement
 
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::Contact;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $agreement = $logic_boxes->get_ca_registrant_agreement();
+
+Accepts no arguments, returns an instance of L<WWW::LogicBoxes::Contact::CA::Agreement> that describes the currently active and required CA Registrant Agreement.
+
+B<Note> Registrants are required to accept this agreement in order to register a .ca domain.
+
+=cut

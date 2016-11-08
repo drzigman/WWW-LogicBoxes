@@ -12,6 +12,8 @@ use WWW::LogicBoxes::Types qw( Bool DateTime DomainName DomainNames DomainStatus
 use WWW::LogicBoxes::PrivateNameServer;
 
 use DateTime;
+use Carp;
+use Mozilla::PublicSuffix qw( public_suffix );
 
 # VERSION
 # ABSTRACT: LogicBoxes Domain Representation
@@ -95,9 +97,10 @@ has technical_contact_id => (
 );
 
 has billing_contact_id => (
-    is       => 'ro',
-    isa      => Int,
-    required => 1,
+    is        => 'ro',
+    isa       => Int,
+    required  => 0,
+    predicate => 'has_billing_contact_id',
 );
 
 has epp_key => (
@@ -112,6 +115,23 @@ has private_nameservers => (
     required  => 0,
     predicate => 'has_private_nameservers',
 );
+
+sub BUILD {
+    my $self = shift;
+
+    my $tld = public_suffix( $self->name );
+
+    if( $tld eq 'ca' ) {
+        if( $self->has_billing_contact_id ) {
+            croak 'CA domains do not have a billing contact';
+        }
+    }
+    elsif( !$self->has_billing_contact_id ) {
+        croak 'A billing_contact_id is required';
+    }
+
+    return $self;
+}
 
 sub construct_from_response {
     my $self     = shift;
@@ -141,10 +161,10 @@ sub construct_from_response {
         created_date          => DateTime->from_epoch( epoch => $response->{creationtime}, time_zone => 'UTC' ),
         expiration_date       => DateTime->from_epoch( epoch => $response->{endtime}, time_zone => 'UTC' ),
         ns                    => [ map { $response->{ $_ } } sort ( grep { $_ =~ m/^ns/ } keys %{ $response } ) ],
-        registrant_contact_id => $response->{registrantcontactid},
-        admin_contact_id      => $response->{admincontactid},
-        technical_contact_id  => $response->{techcontactid},
-        billing_contact_id    => $response->{billingcontactid},
+        registrant_contact_id => $response->{registrantcontact}{contactid},
+        admin_contact_id      => $response->{admincontact}{contactid},
+        technical_contact_id  => $response->{techcontact}{contactid},
+        $response->{billingcontact} ? ( billing_contact_id => $response->{billingcontact}{contactid} ) : ( ),
         epp_key               => $response->{domsecret},
         scalar @private_nameservers ? ( private_nameservers => \@private_nameservers ) : ( ),
     );
@@ -256,9 +276,11 @@ A L<Contact|WWW::LogicBoxes::Contact> id for the Admin.
 
 A L<Contact|WWW::LogicBoxes::Contact> id for the Technical.
 
-=head2 B<billing_contact_id>
+=head2 billing_contact_id
 
-A L<Contact|WWW::LogicBoxes::Contact> id for the Billing.
+A L<Contact|WWW::LogicBoxes::Contact> id for the Billing.  Offers a predicate of has_billing_contact_id.
+
+Almost all TLDs require a billing contact, however for .ca domains it B<must not> be provided.
 
 =head2 B<epp_key>
 
