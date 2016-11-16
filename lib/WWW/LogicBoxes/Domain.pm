@@ -155,7 +155,7 @@ sub construct_from_response {
         name                  => $response->{domainname},
         customer_id           => $response->{customerid},
         status                => $response->{currentstatus},
-        verification_status   => $response->{raaVerificationStatus},
+        verification_status   => $response->{raaVerificationStatus} // 'NA',
         is_locked             => !!( grep { $_ && $_ eq 'transferlock' } @{ $response->{orderstatus} } ),
         is_private            => $response->{isprivacyprotected} && $response->{isprivacyprotected} eq 'true',
         created_date          => DateTime->from_epoch( epoch => $response->{creationtime}, time_zone => 'UTC' ),
