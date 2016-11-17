@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 use Test::Exception;
+use Test::MockModule;
 
 use FindBin;
 use lib "$FindBin::Bin/../../../../lib";
@@ -47,6 +48,25 @@ subtest 'Delete Valid Domain Registration' => sub {
         } 'Lives through retrieving domain by id';
 
         cmp_ok( $retrieved_domain->status, 'eq', 'Deleted', 'Correct Status' );
+    };
+
+    subtest 'Retrieve Deleted Domain - Missing raaVerificationStatus' => sub {
+        my $mocked_domain = Test::MockModule->new('WWW::LogicBoxes::Domain');
+        $mocked_domain->mock( 'construct_from_response', sub {
+            my $self     = shift;
+            my $response = shift;
+
+            delete $response->{raaVerificationStatus};
+            return $mocked_domain->original('construct_from_response')->( $self, $response );
+        });
+
+        my $retrieved_domain;
+        lives_ok {
+            $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+        } 'Lives through retrieving domain by id';
+
+        cmp_ok( $retrieved_domain->status, 'eq', 'Deleted', 'Correct Status' );
+        cmp_ok( $retrieved_domain->verification_status, 'eq', 'NA', 'Correct verification_status' );
     };
 };
 

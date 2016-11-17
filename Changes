@@ -1,3 +1,7 @@
+v1.7.0 2016-11-17
+  - Better handling of raaVerificationStatus being missing (specifically for
+    expired domains)
+
 v1.6.0 2016-11-08
   - Added Support for .ca Contacts and Registration/Retrieval of .ca Domains
 
