@@ -189,6 +189,9 @@ sub install_methods {
                         ### URI: ( $uri )
 
                         my $response = $ua->request( $http_method, $uri );
+
+                        ### Response: ( Dumper( $response ) )
+
                         if ( $self->response_type eq "xml_simple" ) {
                             return XMLin( $response->{content} );
                         }
