@@ -39,7 +39,7 @@ subtest 'Renew Deleted Domain' => sub {
             id    => $domain->id,
             years => 1,
         );
-    } qr/Domain is already deleted/, 'Throws on deleted domain';
+    } qr/No such domain/, 'Throws on deleted domain';
 };
 
 subtest 'Renew Valid Domain' => sub {

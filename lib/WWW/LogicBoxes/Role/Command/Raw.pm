@@ -3,6 +3,9 @@ package WWW::LogicBoxes::Role::Command::Raw;
 use strict;
 use warnings;
 
+#use Smart::Comments;
+#use Data::Dumper;
+
 use Moose::Role;
 use MooseX::Params::Validate;
 
