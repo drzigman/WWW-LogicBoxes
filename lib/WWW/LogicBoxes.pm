@@ -161,7 +161,7 @@ Contacts are used in whois information and are required for domain registration.
 
 =item L<get_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/get_contact_by_id>
 
-=item L<update_contact|WWW::LogicBoxes::Role::Command::Contact/update_contact>
+=item L<update_contact|WWW::LogicBoxes::Role::Command::Contact/update_contact> - OBSOLETE!
 
 =item L<delete_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/delete_contact_by_id>
 
@@ -276,6 +276,10 @@ The CA Registrant Agreement, contacts for .ca domains must accept it before bein
 =head2 L<WWW::LogicBoxes::Customer>
 
 A LogicBoxes customer under the reseller account.
+
+=head2 L<WWW::LogicBoxes::IRTPDetail>
+
+With the changes that became effective on Dec 1st, 2016 to ICANN rules for updating the registrant contact, this object was created to contain information related to an in progress IRTP Verification.  See this object for additional information about the IRTP Changes.
 
 =head2 L<WWW::LogicBoxes::Domain>
 

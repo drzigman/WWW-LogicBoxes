@@ -7,8 +7,11 @@ use Moose;
 use MooseX::StrictConstructor;
 use namespace::autoclean;
 
-use WWW::LogicBoxes::Types qw( Bool DateTime DomainName DomainNames DomainStatus Int PrivateNameServers Str VerificationStatus );
+use WWW::LogicBoxes::Types qw(
+  Bool DateTime DomainName DomainNames DomainStatus Int IRTPDetail PrivateNameServers Str VerificationStatus
+);
 
+use WWW::LogicBoxes::IRTPDetail;
 use WWW::LogicBoxes::PrivateNameServer;
 
 use DateTime;
@@ -116,6 +119,12 @@ has private_nameservers => (
     predicate => 'has_private_nameservers',
 );
 
+has irtp_detail => (
+    is        => 'ro',
+    isa       => IRTPDetail,
+    predicate => 'has_irtp_detail',
+);
+
 sub BUILD {
     my $self = shift;
 
@@ -150,6 +159,11 @@ sub construct_from_response {
         );
     }
 
+    my $irtp_detail;
+    if( exists $response->{irtp_status} ) {
+        $irtp_detail = WWW::LogicBoxes::IRTPDetail->construct_from_response( $response->{irtp_status} );
+    }
+
     return $self->new(
         id                    => $response->{orderid},
         name                  => $response->{domainname},
@@ -161,12 +175,13 @@ sub construct_from_response {
         created_date          => DateTime->from_epoch( epoch => $response->{creationtime}, time_zone => 'UTC' ),
         expiration_date       => DateTime->from_epoch( epoch => $response->{endtime}, time_zone => 'UTC' ),
         ns                    => [ map { $response->{ $_ } } sort ( grep { $_ =~ m/^ns/ } keys %{ $response } ) ],
+        epp_key               => $response->{domsecret},
+        scalar @private_nameservers ? ( private_nameservers => \@private_nameservers ) : ( ),
         registrant_contact_id => $response->{registrantcontact}{contactid},
         admin_contact_id      => $response->{admincontact}{contactid},
         technical_contact_id  => $response->{techcontact}{contactid},
         $response->{billingcontact} ? ( billing_contact_id => $response->{billingcontact}{contactid} ) : ( ),
-        epp_key               => $response->{domsecret},
-        scalar @private_nameservers ? ( private_nameservers => \@private_nameservers ) : ( ),
+        $irtp_detail                ? ( irtp_detail        => $irtp_detail                           ) : ( ),
     );
 }
 
@@ -289,6 +304,10 @@ The secret key needed in order to transfer a domain to another registrar.
 =head2 private_nameserves
 
 ArrayRef of L<WWW::LogicBoxes::PrivateNameServer> objects that contains any created private name servers.  Predicate of has_private_nameservers.
+
+=head2 irtp_detail
+
+If an IRTP Verification is in process for this domain, this attribute will contain a fully formed L<WWW::LogicBoxes::IRTPDetail> object.  If there is no pending IRTP Verification this attribute will not be set.  A predicate of has_irtp_detail is provided.
 
 =head1 METHODS
 
