@@ -40,13 +40,6 @@ sub get_domain_by_id {
         if( $_ =~ m/^No Entity found for Entityid/ ) {
             return;
         }
-        # This is needed to make retrieval of deleted domains return undef.
-        # Previously we would get back the domain with a status of 'deleted'
-        # but now, LogicBoxes throws this error.  Too bad it's the same error
-        # for if the domain isn't in your account or bad credentials.
-        elsif( $_ =~ m/You are not allowed to perform this action/ ) {
-            return;
-        }
 
         croak $_;
     };

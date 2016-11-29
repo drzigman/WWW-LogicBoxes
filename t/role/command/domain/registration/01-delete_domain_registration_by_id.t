@@ -29,6 +29,15 @@ subtest 'Delete Valid Domain Registration' => sub {
         $logic_boxes->delete_domain_registration_by_id( $domain->id );
     } 'Lives through domain registration deletion';
 
+    subtest 'Retrieve Domain Right Away' => sub {
+        my $retrieved_domain;
+        lives_ok {
+            $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+        } 'Lives through retrieving domain by id';
+
+        isa_ok( $retrieved_domain, 'WWW::LogicBoxes::Domain' );
+    };
+
     note( 'Waiting for LogicBoxes to delete domain' );
     sleep 10;
 
@@ -38,7 +47,26 @@ subtest 'Delete Valid Domain Registration' => sub {
             $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
         } 'Lives through retrieving domain by id';
 
-        ok( !$retrieved_domain, 'Does not return a domain' );
+        cmp_ok( $retrieved_domain->status, 'eq', 'Deleted', 'Correct Status' );
+    };
+
+    subtest 'Retrieve Deleted Domain - Missing raaVerificationStatus' => sub {
+        my $mocked_domain = Test::MockModule->new('WWW::LogicBoxes::Domain');
+        $mocked_domain->mock( 'construct_from_response', sub {
+            my $self     = shift;
+            my $response = shift;
+
+            delete $response->{raaVerificationStatus};
+            return $mocked_domain->original('construct_from_response')->( $self, $response );
+        });
+
+        my $retrieved_domain;
+        lives_ok {
+            $retrieved_domain = $logic_boxes->get_domain_by_id( $domain->id );
+        } 'Lives through retrieving domain by id';
+
+        cmp_ok( $retrieved_domain->status, 'eq', 'Deleted', 'Correct Status' );
+        cmp_ok( $retrieved_domain->verification_status, 'eq', 'NA', 'Correct verification_status' );
     };
 };
 
