@@ -3,6 +3,9 @@ package WWW::LogicBoxes::Role::Command::Raw;
 use strict;
 use warnings;
 
+#use Smart::Comments;
+#use Data::Dumper;
+
 use Moose::Role;
 use MooseX::Params::Validate;
 
@@ -189,6 +192,9 @@ sub install_methods {
                         ### URI: ( $uri )
 
                         my $response = $ua->request( $http_method, $uri );
+
+                        ### Response: ( Dumper( $response ) )
+
                         if ( $self->response_type eq "xml_simple" ) {
                             return XMLin( $response->{content} );
                         }

@@ -14,6 +14,9 @@ use WWW::LogicBoxes::Contact::Factory;
 use Try::Tiny;
 use Carp;
 
+use Readonly;
+Readonly our $UPDATE_CONTACT_OBSOLETE => 'Due to IRTP Regulations, as of 2016-12-01 it is no longer possible to update contacts.  Instead, you should create a new contact and then assoicate this new contact with the domain whose contact you wish to change';
+
 requires 'submit';
 
 # VERSION
@@ -64,47 +67,7 @@ sub get_contact_by_id {
 }
 
 sub update_contact {
-    my $self = shift;
-    my (%args) = validated_hash(
-        \@_,
-        contact => { isa => Contact, coerce => 1 },
-    );
-
-    if( !$args{contact}->has_id ) {
-        croak "Contact does not exist (it lacks an id)";
-    }
-
-    if( $args{contact}->isa('WWW::LogicBoxes::Contact::CA') ) {
-        my $existing_contact = $self->get_contact_by_id( $args{contact}->id );
-        if( $existing_contact->cpr ne $args{contact}->cpr ) {
-            croak 'The CPR of a CA Contact can not be changed';
-        }
-    }
-
-    return try {
-        $self->submit({
-            method => 'contacts__modify',
-            params => {
-                'contact-id' => $args{contact}->id,
-                %{ $args{contact}->construct_creation_request() },
-            }
-        });
-
-        return $self->get_contact_by_id( $args{contact}->id );
-    }
-    catch {
-        if( $_ =~ m/^Invalid contact-id/ || $_ =~ m/^No Entity found/ ) {
-            croak 'Invalid Contact ID';
-        }
-
-        if( $args{contact}->isa('WWW::LogicBoxes::Contact::CA') ) {
-            if( $_ =~ m/^Name of .* contact cannot be modified/ ) {
-                croak 'The name of CA Contacts can not be modified';
-            }
-        }
-
-        croak $_;
-    };
+    croak $UPDATE_CONTACT_OBSOLETE;
 }
 
 sub delete_contact_by_id {
@@ -170,13 +133,7 @@ WWW::LogicBoxes::Role::Command::Contact - Contact Related Operations
     my $retrieved_contact = $logic_boxes->get_contact_by_id( $contact->id );
 
     # Update
-    my $old_contact = $logic_boxes->get_contact_by_id( 42 );
-    my $contact  = WWW::LogicBoxes::Contact->new(
-        id => $old_contact->id,
-        ...
-    );
-
-    $logic_boxes->update_contact( contact => $contact );
+    # UPDATE IS OBSOLETE AND NO LONGER SUPPORTED! ( See POD )
 
     # Deletion
     $logic_boxes->delete_contact_by_id( $contact->id );
@@ -222,21 +179,21 @@ Given an Integer ID, will return an instance of L<WWW::LogicBoxes::Contact> (or 
 
 =head2 update_contact
 
-    use WWW::LogicBoxes;
-    use WWW::LogicBoxes::Customer;
-    use WWW::LogicBoxes::Contact;
+    OBSOLETE!
 
-    my $logic_boxes = WWW::LogicBoxes->new( ... );
+On 2016-12-01, a new L<ICANN Inter Registrar Transfer Policy|https://www.icann.org/resources/pages/transfer-policy-2016-06-01-en> went into effect.  LogicBoxes is complying with this by not permitting modification of contacts any longer.
 
-    my $old_contact = $logic_boxes->get_contact_by_id( 42 );
-    my $contact  = WWW::LogicBoxes::Contact->new(
-        id => $old_contact->id,
-        ...
-    );
+Instead, if you wish to update a contact, you should do the following:
 
-    $logic_boxes->update_contact( contact => $contact );
+=over 4
 
-Given a L<WWW::LogicBoxes::Contact> or a HashRef that can be coerced into a L<WWW::LogicBoxes::Contact>, updates the contact with the specified id with L<LogicBoxes|http://www.logicboxes.com>.
+=item 1. Create a New Contact - L<create_contact|WWW::LogicBoxes::Role::Command::Contact/create_contact>
+
+=item 2. Assign That Contact To The Domain - L<update_domain_contacts|WWW::LogicBoxes::Role::Command::Domain/update_domain_contacts>
+
+=item 3. (Optionally) Delete the previous contact after the changes are approved - L<delete_contact_by_id|WWW::LogicBoxes::Role::Command::Contact/delete_contact_by_id>
+
+=back
 
 =head2 delete_contact_by_id
 

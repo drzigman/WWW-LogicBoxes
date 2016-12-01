@@ -23,7 +23,7 @@ sub construct_from_response {
         if( $response->{actiontype} eq 'AddTransferDomain' ) {
             return WWW::LogicBoxes::DomainTransfer->construct_from_response( $response );
         }
-        elsif( $response->{actiontype} eq 'DelDomain' ) {
+        elsif( $response->{actiontype} eq 'DelDomain' || $response->{actiontype} eq 'ModContact' ) {
             return WWW::LogicBoxes::Domain->construct_from_response( $response );
         }
         else {

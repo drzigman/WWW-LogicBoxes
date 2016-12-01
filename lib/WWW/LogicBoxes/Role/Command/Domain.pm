@@ -74,6 +74,7 @@ sub update_domain_contacts {
     my ( %args ) = validated_hash(
         \@_,
         id                    => { isa => Int },
+        is_transfer_locked    => { isa => Bool, default => 1 },
         registrant_contact_id => { isa => Int, optional => 1 },
         admin_contact_id      => { isa => Int, optional => 1 },
         technical_contact_id  => { isa => Int, optional => 1 },
@@ -110,10 +111,13 @@ sub update_domain_contacts {
             return $original_domain;
         }
 
+        # The not for irtp_lock is because logicboxes treats this as opt out
+        # while I'm treating the input as just if it should lock or not
         $self->submit({
             method => 'domains__modify_contact',
             params => {
-                'order-id'    => $args{id},
+                'order-id'              => $args{id},
+                'sixty-day-lock-optout' => ( !$args{is_transfer_locked} ? 'true' : 'false' ),
                 %{ $contacts_to_update }
             }
         });
@@ -467,13 +471,16 @@ B<NOTE> For domain transfers that are in progress a L<domain_transfer|WWW::Logic
 
     $logic_boxes->update_domain_contacts(
         id                    => $domain->id,
+        is_transfer_locked    => 1,            # Optional, defaults to true and only relevant for registrant changes
         registrant_contact_id => $contacts->{registrant_contact}->id,
         admin_contact_id      => $contacts->{admin_contact}->id,
         technical_contact_id  => $contacts->{technical_contact}->id,
         billing_contact_id    => $contacts->{billing_contact}->id,
     );
 
-Given a L<domain|WWW::LogicBoxes::Domain> id and optionally a L<contact|WWW::LogicBoxes::Contact> id for registrant_contact_id, admin_contact_id, technical_contact_id, and/or billing_contact_id, updates the L<domain|WWW::LogicBoxes::Domain> contacts.  This method is smart enough to not request a change if the contact hasn't been updated and consumers need only specify the elements that are changing.
+Given a L<domain|WWW::LogicBoxes::Domain> id and optionally a L<contact|WWW::LogicBoxes::Contact> id for registrant_contact_id, admin_contact_id, technical_contact_id, and/or billing_contact_id, updates the L<domain|WWW::LogicBoxes::Domain> contacts.  Also accepted is an optional is_transfer_locked that indicates if a 60 day lock should be applied to the domain after a change of registrant contact.  This value defaults to true if it's not provided and is only relevant for changes of the registrant contact that trigger the IRTP process.
+
+This method is smart enough to not request a change if the contact hasn't been updated and consumers need only specify the elements that are changing.
 
 =head2 enable_domain_lock_by_id
 

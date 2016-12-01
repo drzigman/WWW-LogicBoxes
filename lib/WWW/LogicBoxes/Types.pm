@@ -35,6 +35,8 @@ use MooseX::Types -declare => [qw(
     IPv4s
     IPv6
     IPv6s
+    IRTPFOAStatus
+    IRTPStatus
     Language
     NexusCategory
     NexusPurpose
@@ -52,6 +54,7 @@ use MooseX::Types -declare => [qw(
     DomainAvailabilities
     DomainRegistration
     DomainTransfer
+    IRTPDetail
     PrivateNameServer
     PrivateNameServers
 )];
@@ -91,6 +94,8 @@ subtype CPR, as CPRIndividual | CPRNonIndividual;
 
 enum DomainStatus,       [ 'InActive', 'Active', 'Suspended', 'Pending Delete Restorable', 'Deleted', 'Archived' ];
 enum InvoiceOption,      [qw( NoInvoice PayInvoice KeepInvoice )];
+enum IRTPFOAStatus,      [qw( PENDING APPROVED DISAPPROVED )];
+enum IRTPStatus,         [qw( PENDING REVOKED EXPIRED FAILED APPROVED SUCCESS REMOTE_FAILURE )];
 enum Language,           [qw( en )];
 enum NexusCategory,      [qw( C11 C12 C21 C31 C32 )];
 enum NexusPurpose,       [qw( P1 P2 P3 P4 P5 )];
@@ -123,6 +128,8 @@ coerce DomainRegistration, from HashRef,
 class_type DomainTransfer, { class => 'WWW::LogicBoxes::DomainRequest::Transfer' };
 coerce DomainTransfer, from HashRef,
     via { WWW::LogicBoxes::DomainRequest::Transfer->new( $_ ) };
+
+class_type IRTPDetail,  { class => 'WWW::LogicBoxes::IRTPDetail' };
 
 class_type NumberPhone, { class => 'Number::Phone' };
 class_type PhoneNumber, { class => 'WWW::LogicBoxes::PhoneNumber' };
