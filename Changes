@@ -1,3 +1,9 @@
+v1.8.0 2016-11-30
+  - Support for 2016-12-01 ICANN IRTP Verification, introduced
+    WWW::LogicBoxes::IRTPDetail
+  - OBSOLETED update_contact, LogicBoxes no longer allows for updating a contact,
+    instead you should create a new contact and assoicate it with the domain
+
 v1.7.0 2016-11-17
   - Better handling of raaVerificationStatus being missing (specifically for
     expired domains)
