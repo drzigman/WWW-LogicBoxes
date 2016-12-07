@@ -1,3 +1,7 @@
+v1.9.0 2016-12-07
+  - Handle domus contacts that do not have nexus data
+  - Added QueuedForDeletion as possible domain status
+
 v1.8.0 2016-11-30
   - Support for 2016-12-01 ICANN IRTP Verification, introduced
     WWW::LogicBoxes::IRTPDetail

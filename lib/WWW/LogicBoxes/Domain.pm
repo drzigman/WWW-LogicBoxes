@@ -237,6 +237,8 @@ Current status of the domain with L<LogicBoxes|http://www.logicboxes.com>.  Will
 
 =item Pending Delete Restorable
 
+=item QueuedForDeletion
+
 =item Deleted
 
 =item Archived
