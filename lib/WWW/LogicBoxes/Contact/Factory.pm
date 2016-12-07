@@ -23,7 +23,8 @@ sub construct_from_response {
     if( $response->{type} eq 'CaContact' ) {
         return WWW::LogicBoxes::Contact::CA->construct_from_response( $response );
     }
-    elsif( grep { $_ eq 'domus' } @{ $response->{contacttype} } ) {
+    elsif( ( grep { $_ eq 'domus' } @{ $response->{contacttype} } )
+        && exists $response->{ApplicationPurpose} && exists $response->{NexusCategory} ) {
         return WWW::LogicBoxes::Contact::US->construct_from_response($response);
     }
     else {
