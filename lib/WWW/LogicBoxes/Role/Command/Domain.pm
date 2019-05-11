@@ -341,6 +341,34 @@ sub renew_domain {
     };
 }
 
+sub resend_verification_email{
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id => { isa => Int },
+    );
+
+    return try {
+        my $domain = $self->get_domain_by_id( $args{id} );
+
+        if( !$domain ) {
+            croak 'No such domain exists';
+        }
+        if( $domain->verification_status eq 'Verified' ){
+            croak 'Domain already verified';
+        }
+        $self->submit({
+            method => 'domains__raa__resend_verification',
+            params => {
+                'order-id' => $args{id}
+            }
+        });
+    }
+    catch {
+        croak $_;
+    };
+}
+
 1;
 
 __END__
@@ -579,5 +607,15 @@ See L<WWW::LogicBoxes::DomainRequest/invoice_option> for additional details abou
 =back
 
 Returns an instance of the domain object.
+
+=head2 resend_verification_email
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBooxes::Domain;
+
+    my $logic_boxes = WWW::LogicBoxe->new( ... );
+    $logic_boxes->resend_verification_email( id => $domain->id );
+
+Given an Integer L<domain|WWW::LogicBoxes::Domain> id, resends Verification email. Returns true if executed successfully or false if not
 
 =cut
