@@ -349,14 +349,18 @@ sub resend_verification_email{
     );
 
     return try {
-        my $domain = $self->get_domain_by_id( $args{id} );
+        my $response = $self->submit({
+            method => 'domains__details',
+            params => {
+                'order-id' => $args{id},
+                'options'  => 'DomainStatus'
+            }
+        });
 
-        if( !$domain ) {
-            croak 'No such domain exists';
-        }
-        if( $domain->verification_status eq 'Verified' ){
+        if( $response->{raaVerificationStatus} eq 'Verified' ){
             croak 'Domain already verified';
         }
+
         $self->submit({
             method => 'domains__raa__resend_verification',
             params => {
@@ -365,6 +369,12 @@ sub resend_verification_email{
         });
     }
     catch {
+        if( $_ =~ m/You are not allowed to perform this action/ ) {
+            croak 'No matching order found';
+        }
+        if( $_ =~ m/No Entity found for Entityid/ ) {
+            croak 'No such domain';
+        }
         croak $_;
     };
 }
