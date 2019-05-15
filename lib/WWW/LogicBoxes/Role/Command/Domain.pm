@@ -361,12 +361,18 @@ sub resend_verification_email{
             croak 'Domain already verified';
         }
 
-        $self->submit({
+        $response = $self->submit({
             method => 'domains__raa__resend_verification',
             params => {
                 'order-id' => $args{id}
             }
         });
+        if( $response->{result} eq 'true' ){
+            return 1;
+        }
+        elsif( $response->{result} eq 'false' ){
+            return 0;
+        }
     }
     catch {
         if( $_ =~ m/You are not allowed to perform this action/ ) {

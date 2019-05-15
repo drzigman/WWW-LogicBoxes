@@ -12,8 +12,6 @@ use lib "$FindBin::Bin/../../../lib";
 use Test::WWW::LogicBoxes::Domain qw( create_domain );
 use Test::WWW::LogicBoxes qw( create_api );
 
-use WWW::LogicBoxes;
-
 my $logic_boxes = create_api;
 
 subtest 'Resend Email Verification For Domain That Does Not Exist - Throws Exception' => sub {
@@ -50,7 +48,7 @@ subtest 'Resend Email Verification For Domain Requiring Verification - Successfu
     lives_ok {
         $response = $logic_boxes->resend_verification_email( id => $domain->id );
     };
-    ok( $response->{result} eq 'true', 'Responded with True' );
+    ok( $response == 1, 'Responded with True' );
 };
 
 done_testing;
