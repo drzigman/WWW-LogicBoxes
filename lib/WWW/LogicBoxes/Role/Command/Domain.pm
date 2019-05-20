@@ -341,8 +341,8 @@ sub renew_domain {
     };
 }
 
-sub resend_verification_email{
-    my $self = shift;
+sub resend_verification_email {
+    my $self     = shift;
     my ( %args ) = validated_hash(
         \@_,
         id => { isa => Int },
@@ -367,20 +367,16 @@ sub resend_verification_email{
                 'order-id' => $args{id}
             }
         });
-        if( $response->{result} eq 'true' ){
-            return 1;
-        }
-        elsif( $response->{result} eq 'false' ){
-            return 0;
-        }
+
+        return 1 if( $response->{result} eq 'true' );
+        return 0 if( $response->{result} eq 'false' );
+
+        croak 'Resend Verification request did not return a result, unknown if sent';
     }
     catch {
-        if( $_ =~ m/You are not allowed to perform this action/ ) {
-            croak 'No matching order found';
-        }
-        if( $_ =~ m/No Entity found for Entityid/ ) {
-            croak 'No such domain';
-        }
+        croak 'No matching order found' if( $_ =~ m/You are not allowed to perform this action/ );
+        croak 'No such domain'          if( $_ =~ m/No Entity found for Entityid/ );
+
         croak $_;
     };
 }
@@ -632,6 +628,6 @@ Returns an instance of the domain object.
     my $logic_boxes = WWW::LogicBoxe->new( ... );
     $logic_boxes->resend_verification_email( id => $domain->id );
 
-Given an Integer L<domain|WWW::LogicBoxes::Domain> id, resends Verification email. Returns true if executed successfully or false if not
+Given an Integer L<domain|WWW::LogicBoxes::Domain> id, resends Verification email. Returns truthy if executed successfully or falsey if not.  Will croak if unable to determine if the resend was successful.
 
 =cut

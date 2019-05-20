@@ -14,31 +14,28 @@ use Test::WWW::LogicBoxes qw( create_api );
 
 my $logic_boxes = create_api;
 
-subtest 'Resend Email Verification For Domain That Does Not Exist - Throws Exception' => sub {
+subtest 'Attempt to Resend Email Verification For Domain That Does Not Exist' => sub {
     throws_ok {
         $logic_boxes->resend_verification_email( id => 999999999 );
-    }
-    qr/No such domain/;
+    } qr/No such domain/, 'Throws on domain does not exist';
 };
 
-subtest 'Resend Email Verification For Domain That Does Not Need It - Throws Exception' => sub {
+subtest 'Attempt to Resend Email Verification For Already Verified Domain' => sub {
     my $domain        = create_domain();
     my $mocked_submit = Test::MockModule->new('WWW::LogicBoxes');
-    $mocked_submit->mock(
-        'submit',
-        sub {
-            my $args = $_[1];
-            if ( $args->{method} eq 'domains__details' ) {
-                return { raaVerificationStatus => 'Verified' };
-            }
-            $mocked_submit->original('submit')->(@_);
-        }
-    );
+    $mocked_submit->mock( 'submit', sub {
+        note('Mocked WWW::LogicBoxes->submit');
+
+        return {
+            raaVerificationStatus => 'Verified'
+        };
+    });
+
     throws_ok {
         $logic_boxes->resend_verification_email( id => $domain->id );
-    }
-    qr/Domain already verified/;
-    $mocked_submit->unmock('submit');
+    } qr/Domain already verified/, 'Throws on domain already verified';
+
+    $mocked_submit->unmock_all;
 };
 
 subtest 'Resend Email Verification For Domain Requiring Verification - Successful' => sub {
@@ -47,8 +44,9 @@ subtest 'Resend Email Verification For Domain Requiring Verification - Successfu
     my $response;
     lives_ok {
         $response = $logic_boxes->resend_verification_email( id => $domain->id );
-    };
-    ok( $response == 1, 'Responded with True' );
+    } 'Lives through resending of verification email';
+
+    ok( $response, 'Successfully resent verification email' );
 };
 
 done_testing;
