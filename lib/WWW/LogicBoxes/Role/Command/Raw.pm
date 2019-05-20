@@ -28,7 +28,7 @@ Readonly our $API_METHODS => {
             qw(available suggest-names v5/suggest-names validate-transfer search customer-default-ns orderid details details-by-name locks tel/cth-details)
         ],
         POST => [
-            qw(register transfer eu/transfer eu/trade uk/transfer renew modify-ns add-cns modify-cns-name modify-cns-ip delete-cns-ip modify-contact modify-privacy-protection modify-auth-code enable-theft-protection disable-theft-protection tel/modify-whois-pref resend-rfa uk/release cancel-transfer delete restore de/recheck-ns dotxxx/assoication-details)
+            qw(register transfer eu/transfer eu/trade uk/transfer renew modify-ns add-cns modify-cns-name modify-cns-ip delete-cns-ip modify-contact modify-privacy-protection modify-auth-code enable-theft-protection disable-theft-protection tel/modify-whois-pref resend-rfa uk/release cancel-transfer delete restore de/recheck-ns dotxxx/assoication-details raa/resend-verification)
         ],
     },
     contacts => {

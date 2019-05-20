@@ -229,6 +229,8 @@ Retrieval of and management of registered domains.
 
 =item L<renew_domain|WWW::LogicBoxes::Role::Command::Domain/renew_domain>
 
+=item L<resend_verification_email|WWW::LogicBoxes::Role::Command::Domain/resend_verification_email>
+
 =back
 
 =head2 L<Domain Private Nameservers|WWW::LogicBoxes::Role::Command::Domain::PrivateNameServer>
@@ -389,6 +391,8 @@ Special thanks to the following individuals who have offered commits, bug report
 =item Brandon Husbands
 
 =item Slaven Rezic
+
+=item David Foster
 
 =back
 
