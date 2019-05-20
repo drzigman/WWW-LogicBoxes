@@ -586,7 +586,7 @@ Given an Integer L<domain|WWW::LogicBoxes::Domain> id and an ArrayRef of nameser
     use WWW::LogicBoxes;
     use WWW::LogicBooxes::Domain;
 
-    my $logic_boxes = WWW::LogicBoxe->new( ... );
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
     $logic_boxes->renew_domain(
         id             => $domain->id,
         years          => 1,
@@ -625,7 +625,7 @@ Returns an instance of the domain object.
     use WWW::LogicBoxes;
     use WWW::LogicBooxes::Domain;
 
-    my $logic_boxes = WWW::LogicBoxe->new( ... );
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
     $logic_boxes->resend_verification_email( id => $domain->id );
 
 Given an Integer L<domain|WWW::LogicBoxes::Domain> id, resends Verification email. Returns truthy if executed successfully or falsey if not.  Will croak if unable to determine if the resend was successful.

@@ -392,6 +392,8 @@ Special thanks to the following individuals who have offered commits, bug report
 
 =item Slaven Rezic
 
+=item David Foster
+
 =back
 
 =head1 COPYRIGHT & LICENSE
