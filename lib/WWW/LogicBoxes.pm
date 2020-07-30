@@ -394,6 +394,8 @@ Special thanks to the following individuals who have offered commits, bug report
 
 =item David Foster
 
+=item Eris Caffee
+
 =back
 
 =head1 COPYRIGHT & LICENSE
