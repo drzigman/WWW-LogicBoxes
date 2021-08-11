@@ -6,7 +6,7 @@ use warnings;
 use Moose::Role;
 use MooseX::Params::Validate;
 
-use WWW::LogicBoxes::Types qw( DomainName DomainTransfer Int );
+use WWW::LogicBoxes::Types qw( DomainName DomainTransfer Int Str );
 
 use WWW::LogicBoxes::DomainRequest::Transfer;
 
@@ -127,6 +127,38 @@ sub resend_transfer_approval_mail_by_id {
     };
 }
 
+sub submit_auth_code {
+    my $self = shift;
+    my ( %args ) = validated_hash(
+        \@_,
+        id        => { isa => Int },
+        auth_code => { isa => Str }, # aka EPP key
+    );
+
+    return try {
+        my $response = $self->submit({
+            method => 'domains__transfer__submit_auth_code',
+            params => {
+                'order-id'  => $args{id},
+                'auth-code' => $args{auth_code},
+            }
+        });
+
+        if ( lc $response->{result} eq 'success' ) {
+            return;
+        }
+
+        croak $response;
+    }
+    catch {
+        if ( $_ =~ m/You are not allowed to perform this action/ ) {
+            croak 'No matching order found';
+        }
+
+        croak $_;
+    };
+}
+
 1;
 
 __END__
@@ -235,5 +267,18 @@ Given an Integer representing an in progress L<transfer|WWW::LogicBoxes::DomainT
     $logic_boxes->resend_transfer_approval_mail_by_id( $domain_transfer->id );
 
 Given an Integer representing an in progress L<transfer|WWW::LogicBoxes::DomainTransfer> that has not yet been approved by the L<admin contact|WWW::LogicBoxes::Contact> as specified by the losing registrar, will resend the transfer approval email.  If this method is used on a completed transfer, a registration, or a domain that has already been approved this method will croak with an error.
+
+=head2 submit_auth_code
+
+    use WWW::LogicBoxes;
+    use WWW::LogicBoxes::DomainTransfer;
+
+    my $logic_boxes = WWW::LogicBoxes->new( ... );
+    my $epp_value = somehow_get_code_from_current_registrar( ... );
+
+    my $domain_transfer = $logic_boxes->get_domain_by_id( ... );
+    $logic_boxes->submit_auth_code( { id => $domain_transfer->id, auth_code => $epp_value } );
+
+Submits the Domain Secret (also known as Authorization Code, also known as EPP key) for an in-progress domain transfer. Successfull submission results in silent return, otherwise, croaks.
 
 =cut
