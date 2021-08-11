@@ -154,6 +154,7 @@ sub submit_auth_code {
         if ( $_ =~ m/You are not allowed to perform this action/ ) {
             croak 'No matching order found';
         }
+
         croak $_;
     };
 }
