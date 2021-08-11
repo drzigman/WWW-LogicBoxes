@@ -207,6 +207,8 @@ New Domain Transfers.
 
 =item L<resend_transfer_approval_mail_by_id|WWW::LogicBoxes::Role::Command::Domain::Transfer/resend_transfer_approval_mail_by_id>
 
+=item L<|submit_auth_code|WWW::LogicBoxes::Role::Command::Domain::Transfer/submit_auth_code>
+
 =back
 
 =head2 L<Domain|WWW::LogicBoxes::Role::Command::Domain>
